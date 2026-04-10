@@ -12,8 +12,13 @@ import Loading from './Loading';
  * @param {string|string[]} allowedRoles - Role(s) allowed to access this route
  * @returns {React.ReactNode} - The protected element or redirect
  */
-export default function ProtectedRoute({ element, allowedRoles = null }) {
+export default function ProtectedRoute({ element, children, allowedRoles = null }) {
+  console.log('🔒 ProtectedRoute CHECKING - allowedRoles:', allowedRoles);
   const { user, loading, isAuthenticated } = useAuth();
+  console.log('🔒 ProtectedRoute state - loading:', loading, 'isAuthenticated:', isAuthenticated, 'user:', user);
+
+  // Use children if element not provided
+  const component = element || children;
 
   // Fallback check: verify token exists (in case of state sync issues)
   const hasToken = localStorage.getItem('authToken');
@@ -41,12 +46,28 @@ export default function ProtectedRoute({ element, allowedRoles = null }) {
     const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
     const userToCheck = user || (storedUser ? JSON.parse(storedUser) : null);
 
-    if (userToCheck && !rolesArray.includes(userToCheck.role)) {
-      // Redirect to 403 Forbidden page or dashboard
+    // Debug logging with exact values
+    const userRole = userToCheck?.role || 'NO_ROLE';
+    const allowedRolesLower = rolesArray.map(r => r.toLowerCase());
+    const userRoleLower = userRole.toLowerCase();
+    const hasAccess = allowedRolesLower.includes(userRoleLower);
+
+    console.log('🔐 PROTECTED ROUTE CHECK:');
+    console.log('  - User role from localStorage:', userRole);
+    console.log('  - User role (lowercase):', userRoleLower);
+    console.log('  - Allowed roles:', rolesArray);
+    console.log('  - Allowed roles (lowercase):', allowedRolesLower);
+    console.log('  - Has access?:', hasAccess);
+    console.log('  - Full user object:', userToCheck);
+
+    if (userToCheck && !hasAccess) {
+      console.error('❌ ACCESS DENIED - Role mismatch');
+      console.error('  Expected one of:', allowedRolesLower);
+      console.error('  But got:', userRoleLower);
       return <Navigate to="/403" replace />;
     }
   }
 
   // User is authenticated and authorized
-  return element;
+  return component;
 }

@@ -15,18 +15,23 @@ export const AuthProvider = ({ children }) => {
         const token = authService.getAuthToken();
         const storedUser = localStorage.getItem('user');
 
+        console.log('🔐 INITIALIZING AUTH:', { token: !!token, storedUser: !!storedUser });
+
         if (token && storedUser) {
           // Both token and user exist - restore auth state
           const userData = JSON.parse(storedUser);
+          console.log('✅ Auth restored:', userData);
           setUser(userData);
           setIsAuthenticated(true);
         } else if (token || storedUser) {
           // One exists but not the other - clear both (corrupted state)
+          console.warn('⚠️ Corrupted auth state - clearing');
           authService.logout();
           setUser(null);
           setIsAuthenticated(false);
         } else {
           // Neither exists - user not logged in
+          console.log('⭕ No auth found');
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -47,8 +52,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await authService.login(credentials);
+
+      // Debug log full response
+      console.log('📡 FULL LOGIN RESPONSE:', JSON.stringify(response.data, null, 2));
+
       const { accessToken, refreshToken } = response.data.tokens;
       const { user_id, email, role } = response.data.data;
+
+      console.log('✅ EXTRACTED AUTH DATA:');
+      console.log('  - user_id:', user_id);
+      console.log('  - email:', email);
+      console.log('  - role: "' + role + '" (type: ' + typeof role + ')');
+      console.log('  - role lowercase: "' + (role || '').toLowerCase() + '"');
+      console.log('  - accessToken exists:', !!accessToken);
+      console.log('  - refreshToken exists:', !!refreshToken);
 
       // Prepare user data
       const userData = {
@@ -56,6 +73,8 @@ export const AuthProvider = ({ children }) => {
         email: email,
         role: role,
       };
+
+      console.log('💾 Storing user data:', userData);
 
       // Store tokens FIRST
       authService.setAuthToken(accessToken);
@@ -66,12 +85,23 @@ export const AuthProvider = ({ children }) => {
       // Persist user to localStorage immediately
       localStorage.setItem('user', JSON.stringify(userData));
 
+      // Verify what was stored
+      console.log('✓ Verified storage:', {
+        storedUser: JSON.parse(localStorage.getItem('user')),
+        hasToken: !!localStorage.getItem('authToken'),
+      });
+
       // Update state
       setUser(userData);
       setIsAuthenticated(true);
 
       return userData;
     } catch (error) {
+      console.error('❌ Login failed:', {
+        message: error.message,
+        status: error.response?.status,
+        responseData: error.response?.data,
+      });
       // Clear any partial state on error
       authService.logout();
       setUser(null);

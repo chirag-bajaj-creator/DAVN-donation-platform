@@ -13,6 +13,8 @@ export default function RegisterForm({ onSuccess }) {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isAdminRegistration, setIsAdminRegistration] = useState(false);
+  const [adminSecret, setAdminSecret] = useState('');
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
 
@@ -52,6 +54,12 @@ export default function RegisterForm({ onSuccess }) {
           state: data.state || '',
           zipCode: data.zipCode || '',
         };
+      }
+
+      // Add admin secret if provided (not empty)
+      if (adminSecret && adminSecret.trim()) {
+        console.log('🔐 Admin secret provided:', adminSecret);
+        userData.adminSecret = adminSecret;
       }
 
       if (!data.terms) {
@@ -328,6 +336,23 @@ export default function RegisterForm({ onSuccess }) {
           </div>
         </div>
       </details>
+
+      {/* Admin Secret (Optional for admin registration) */}
+      <div>
+        <label htmlFor="adminSecret" className="block text-sm font-medium text-gray-700 mb-1">
+          Admin Secret (Leave blank for regular user)
+        </label>
+        <input
+          id="adminSecret"
+          type="password"
+          placeholder="Enter admin secret if registering as admin"
+          value={adminSecret}
+          onChange={(e) => setAdminSecret(e.target.value)}
+          disabled={isLoading}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+        />
+        <p className="text-xs text-gray-500 mt-1">Only required if you're registering as an admin</p>
+      </div>
 
       {/* Terms & Conditions */}
       <div className="flex items-start space-x-2">

@@ -1,8 +1,16 @@
 import apiClient from './api';
 
 const authService = {
-  // Register a new user
+  // Register a new user or admin
   register: (userData) => {
+    // If adminSecret is provided, use admin registration endpoint
+    if (userData.adminSecret) {
+      console.log('📝 Registering as ADMIN with secret');
+      return apiClient.post('/auth/register-admin', userData);
+    }
+
+    // Otherwise, register as regular user
+    console.log('📝 Registering as regular USER');
     return apiClient.post('/auth/register', userData);
   },
 

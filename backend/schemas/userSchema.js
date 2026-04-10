@@ -36,7 +36,8 @@ const registerSchema = Joi.object({
     state: Joi.string().optional(),
     zipCode: Joi.string().optional(),
     country: Joi.string().optional()
-  }).optional()
+  }).optional(),
+  adminSecret: Joi.string().optional()
 });
 
 const loginSchema = Joi.object({

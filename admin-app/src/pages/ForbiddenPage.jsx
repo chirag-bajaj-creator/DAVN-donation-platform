@@ -10,7 +10,7 @@ export default function ForbiddenPage() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link to={isAuthenticated ? '/dashboard' : '/login'} className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
+          <Link to={isAuthenticated ? '/panel' : '/'} className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
             Hravinder
           </Link>
           <p className="text-gray-600 text-sm">Donation Platform</p>
@@ -39,13 +39,13 @@ export default function ForbiddenPage() {
           {/* Action Button */}
           <div className="flex gap-4 justify-center">
             <Link
-              to="/dashboard"
+              to="/panel"
               className="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 11l4-4m0 0l4 4m-4-4V3" />
               </svg>
-              Go to Dashboard
+              Go to Panel
             </Link>
           </div>
 

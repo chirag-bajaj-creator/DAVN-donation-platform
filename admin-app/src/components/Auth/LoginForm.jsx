@@ -18,10 +18,10 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect to dashboard if already authenticated
+  // Redirect to panel if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      navigate('/panel', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -38,7 +38,7 @@ export default function LoginForm() {
       }
 
       toast.success('Login successful!');
-      navigate('/dashboard', { replace: true });
+      navigate('/panel', { replace: true });
     } catch (error) {
       console.error('Login error:', error);
       const errorData = error.response?.data;
