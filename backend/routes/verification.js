@@ -1,5 +1,6 @@
 const express = require('express');
 const verificationController = require('../controllers/verificationController');
+const authenticate = require('../middleware/authenticate');
 const authorize = require('../middleware/authorize');
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.post(
  */
 router.post(
   '/reports',
+  authenticate,
   verificationController.submitReport
 );
 

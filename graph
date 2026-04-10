@@ -1,0 +1,3 @@
+pip install code-review-graph                     # or: pipx install code-review-graph
+code-review-graph install          # auto-detects and configures all supported platforms
+code-review-graph build            # parse your codebase

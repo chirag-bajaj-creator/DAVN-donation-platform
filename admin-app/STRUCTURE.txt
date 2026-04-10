@@ -1,0 +1,130 @@
+FRONTEND PROJECT STRUCTURE - HRAVINDER DONATION PLATFORM
+========================================================
+
+PROJECT ROOT: client/
+
+CONFIGURATION FILES (Root Level)
+================================
+✓ package.json                 - Project dependencies and scripts
+✓ package-lock.json            - Locked dependency versions
+✓ vite.config.js              - Vite build configuration
+✓ tailwind.config.js          - Tailwind CSS configuration
+✓ postcss.config.js           - PostCSS configuration
+✓ eslint.config.js            - ESLint configuration
+✓ .env                        - Development environment variables
+✓ .env.example                - Environment template
+✓ index.html                  - HTML entry point
+✓ .gitignore                  - Git ignore rules
+
+SOURCE DIRECTORY: src/
+=====================
+
+1. COMPONENTS (src/components/)
+   Auth/                       - Authentication components
+   Donation/                   - Donation-related components
+   QR/                        - QR payment components
+   Needy/                     - Needy management components
+   Common/                    - Shared/common components
+
+2. PAGES (src/pages/)
+   Auth/                      - Login, Register pages
+   Dashboard/                 - Dashboard pages
+   Donation/                  - Donation pages
+   QR/                       - QR payment pages
+   Needy/                    - Needy registration & listing
+   Admin/                    - Admin verification pages
+
+3. SERVICES (src/services/)
+   ✓ api.js                  - Axios instance with interceptors
+   ✓ authService.js          - Authentication API calls
+   ✓ donationService.js      - Donation API endpoints
+   ✓ needyService.js         - Needy API endpoints
+   ✓ uploadService.js        - File upload service
+
+4. HOOKS (src/hooks/)
+   ✓ useAuth.js              - Auth context hook
+   ✓ useAsync.js             - Async operations hook
+   ✓ index.js                - Barrel export
+
+5. CONTEXT (src/context/)
+   ✓ AuthContext.jsx         - Global authentication state
+
+6. UTILITIES (src/utils/)
+   ✓ validation.js           - Form validation rules
+   ✓ formatters.js           - Data formatting utilities
+   ✓ constants.js            - App constants and enums
+   ✓ index.js                - Barrel export
+
+7. STYLES (src/styles/)
+   ✓ globals.css             - Global styles with Tailwind
+
+8. ASSETS (src/assets/)
+   - Asset files (images, icons, etc.)
+
+9. CORE FILES (src/)
+   ✓ App.jsx                 - Root application component
+   ✓ main.jsx                - Application entry point
+   App.css                   - App-level styles (legacy)
+   index.css                 - Index styles (legacy)
+
+DEPENDENCIES INSTALLED
+======================
+Core Framework:
+  ✓ react@19.2.4
+  ✓ react-dom@19.2.4
+  ✓ react-router-dom@6.30.3
+
+HTTP & Forms:
+  ✓ axios@1.14.0
+  ✓ react-hook-form@7.72.0
+
+UI & Styling:
+  ✓ tailwindcss@3.4.19
+  ✓ autoprefixer@10.4.27
+  ✓ postcss@8.5.8
+
+Notifications:
+  ✓ react-toastify@10.0.6
+
+Utilities:
+  ✓ date-fns@3.6.0
+
+Dev Tools:
+  ✓ vite@8.0.1
+  ✓ @vitejs/plugin-react@6.0.1
+  ✓ eslint@9.39.4
+  ✓ @eslint/js@9.39.4
+
+IMPLEMENTED FEATURES
+====================
+✓ API Service Layer (axios with interceptors)
+✓ Authentication Context (global state)
+✓ Custom Hooks (useAuth, useAsync)
+✓ Validation Rules (email, password, phone, etc.)
+✓ Data Formatters (currency, date, phone, etc.)
+✓ Constants & Enums (donation types, roles, etc.)
+✓ Global Styles (Tailwind + custom variables)
+✓ Error Handling (API interceptors)
+✓ Loading States (async operations)
+✓ File Upload Service (Cloudinary ready)
+
+READY FOR
+=========
+✓ Page Development
+✓ Component Creation
+✓ Routing Setup
+✓ Form Building
+✓ API Integration
+✓ State Management
+✓ Styling with Tailwind
+
+COMMANDS
+========
+npm run dev      - Start development server
+npm run build    - Build for production
+npm run preview  - Preview production build
+npm run lint     - Check code quality
+
+Total Files Created: 15+ service/utility files
+Total Folders Created: 18+ organized directories
+Status: FULLY CONFIGURED AND READY FOR DEVELOPMENT

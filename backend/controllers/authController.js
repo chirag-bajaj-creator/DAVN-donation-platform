@@ -79,6 +79,75 @@ const authController = {
   },
 
   /**
+   * Register new admin
+   */
+  registerAdmin: async (req, res, next) => {
+    try {
+      const { email, password, name, phone, address, adminSecret } = req.validatedData;
+
+      // Validate admin secret
+      if (adminSecret !== process.env.ADMIN_REGISTRATION_SECRET) {
+        return res.status(403).json({
+          success: false,
+          error: 'Invalid admin registration secret',
+          code: 'INVALID_SECRET',
+          timestamp: new Date()
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await User.findOne({
+        $or: [{ email: email.toLowerCase() }, { phone }]
+      });
+
+      if (existingUser) {
+        return res.status(422).json({
+          success: false,
+          error: existingUser.email === email.toLowerCase()
+            ? 'Email already registered'
+            : 'Phone number already registered',
+          code: 'USER_EXISTS',
+          timestamp: new Date()
+        });
+      }
+
+      // Create new admin user
+      const newUser = new User({
+        email: email.toLowerCase(),
+        password,
+        name,
+        phone,
+        address,
+        role: 'admin',
+        isActive: true
+      });
+
+      await newUser.save();
+
+      const { accessToken, refreshToken } = generateTokens(newUser._id, newUser.role);
+
+      res.status(201).json({
+        success: true,
+        message: 'Admin registration successful',
+        data: {
+          user_id: newUser._id,
+          email: newUser.email,
+          name: newUser.name,
+          phone: newUser.phone,
+          role: newUser.role
+        },
+        tokens: {
+          accessToken,
+          refreshToken
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * Login user
    */
   login: async (req, res, next) => {

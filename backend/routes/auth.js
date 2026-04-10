@@ -17,6 +17,12 @@ const router = express.Router();
 router.post('/register', validate(registerSchema), authController.register);
 
 /**
+ * POST /api/auth/register-admin
+ * Register new admin (requires admin secret)
+ */
+router.post('/register-admin', validate(registerSchema), authController.registerAdmin);
+
+/**
  * POST /api/auth/login
  * Login user
  */

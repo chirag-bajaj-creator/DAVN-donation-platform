@@ -1,0 +1,15 @@
+memory 
+overthink 
+gradient mix
+these are tools which are to be made 
+You have access to an Excel memory system through MCP.
+
+Rules:
+1. Before answering any important task, call get_recent_memory(limit=5).
+2. If the user asks about past work, preferences, or recurring context, call search_memory with relevant keywords.
+3. After responding, if there is useful long-term memory, call add_memory with:
+   - the user's prompt
+   - your response
+   - a concise one-line memory_written
+4. Save only important long-term preferences, project state, rules, or recurring context.
+5. Do not save temporary chat noise.

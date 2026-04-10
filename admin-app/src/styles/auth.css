@@ -1,0 +1,153 @@
+/* Authentication Pages Styles */
+
+/* Input field styling */
+.auth-input {
+  @apply px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+}
+
+.auth-input:disabled {
+  @apply bg-gray-100 cursor-not-allowed;
+}
+
+/* Error message styling */
+.auth-error {
+  @apply text-red-500 text-sm mt-1;
+}
+
+/* Success message styling */
+.auth-success {
+  @apply text-green-600 text-sm mt-1;
+}
+
+/* Form container */
+.auth-form-container {
+  @apply space-y-4;
+}
+
+/* Button styling */
+.auth-button {
+  @apply w-full py-2 px-4 rounded-lg font-medium transition-colors;
+}
+
+.auth-button-primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700;
+}
+
+.auth-button-primary:disabled {
+  @apply bg-gray-400 cursor-not-allowed;
+}
+
+.auth-button-secondary {
+  @apply bg-gray-200 text-gray-900 hover:bg-gray-300;
+}
+
+.auth-button-secondary:disabled {
+  @apply bg-gray-100 cursor-not-allowed;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Password strength indicator */
+.password-strength-bar {
+  @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.password-strength-bar-fill {
+  @apply h-full transition-all duration-300;
+}
+
+.password-strength-weak {
+  @apply bg-red-500;
+}
+
+.password-strength-fair {
+  @apply bg-yellow-500;
+}
+
+.password-strength-good {
+  @apply bg-blue-500;
+}
+
+.password-strength-strong {
+  @apply bg-green-500;
+}
+
+/* Form label styling */
+.auth-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+/* Checkbox styling */
+.auth-checkbox {
+  @apply w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500;
+}
+
+/* Error alert box */
+.auth-error-alert {
+  @apply p-4 bg-red-100 border border-red-400 text-red-700 rounded;
+}
+
+/* Success alert box */
+.auth-success-alert {
+  @apply p-4 bg-green-100 border border-green-400 text-green-700 rounded;
+}
+
+/* Form field wrapper */
+.auth-field {
+  @apply space-y-1;
+}
+
+/* Header styling */
+.auth-header {
+  @apply bg-white shadow-sm;
+}
+
+.auth-page {
+  @apply min-h-screen flex flex-col;
+}
+
+.auth-main {
+  @apply flex-1 flex items-center justify-center px-4 py-12;
+}
+
+.auth-footer {
+  @apply bg-white border-t border-gray-200;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auth-main {
+    @apply px-3 py-6;
+  }
+}
+
+/* Password visibility toggle button */
+.password-toggle {
+  @apply absolute right-3 top-2.5 text-gray-500 hover:text-gray-700 cursor-pointer;
+}
+
+/* Form fieldset for grouped fields */
+.auth-fieldset {
+  @apply space-y-3;
+}
+
+/* Link styling */
+.auth-link {
+  @apply text-primary-600 hover:text-primary-700 transition-colors;
+}
+
+.auth-link-underline {
+  @apply text-primary-600 hover:text-primary-700 underline transition-colors;
+}
