@@ -3,7 +3,7 @@ import apiClient from './api';
 const authService = {
   // Register a new volunteer
   register: (userData) => {
-    return apiClient.post('/volunteer/register', userData);
+    return apiClient.post('/auth/register', userData);
   },
 
   // Login user

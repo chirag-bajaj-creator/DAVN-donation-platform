@@ -20,17 +20,17 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
       // Build address object
       const address = {
         city: data.city?.trim() || '',
-        street: data.street?.trim() || '',
-        state: data.state?.trim() || '',
-        zipCode: data.zipCode?.trim() || ''
+        ...(data.street?.trim() ? { street: data.street.trim() } : {}),
+        ...(data.state?.trim() ? { state: data.state.trim() } : {}),
+        ...(data.zipCode?.trim() ? { zipCode: data.zipCode.trim() } : {}),
       };
 
       // Build submission data based on type
       const submissionData = type === 'individual'
         ? {
             name: (data.name || '').trim(),
-            phone: (data.phone || '').trim(),
-            email: (data.email || '').trim(),
+            phone: (data.phone || '').replace(/\D/g, '').slice(-10),
+            ...(data.email?.trim() ? { email: data.email.trim() } : {}),
             address,
             type_of_need: (data.typeOfNeed || '').trim(),
             urgency: (data.urgency || 'medium').trim(),
@@ -52,7 +52,7 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
             description: (data.description || '').trim()
           };
 
-      console.log('Final submission data:', submissionData);
+      console.log('Final submission data:', JSON.stringify(submissionData, null, 2));
 
       // Validate required fields
       if (!submissionData.name) throw new Error('Name is required');
@@ -64,10 +64,10 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
       await onSubmit(submissionData);
       toast.success('Registration submitted successfully!');
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Registration error FULL RESPONSE:', JSON.stringify(error.response?.data, null, 2));
       const message = error.response?.data?.details
-        ? JSON.stringify(error.response.data.details)
-        : error.response?.data?.message || error.message || 'Submission failed';
+        ? error.response.data.details.map(d => d.message || d.field).join(', ')
+        : error.response?.data?.error || error.response?.data?.message || error.message || 'Submission failed';
       toast.error(message);
     } finally {
       setIsLoading(false);

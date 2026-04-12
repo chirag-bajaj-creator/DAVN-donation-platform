@@ -20,6 +20,9 @@ const authService = {
     return apiClient.post('/auth/login', credentials)
       .then(response => {
         console.log('✅ Login successful:', response.data);
+        if (response.data.token || response.data.authToken) {
+          authService.setAuthToken(response.data.token || response.data.authToken);
+        }
         return response;
       })
       .catch(error => {

@@ -61,6 +61,9 @@ export default function VolunteersPage() {
           <button className={`tab ${tab === 'pending' ? 'active' : ''}`} onClick={() => setTab('pending')}>
             Pending
           </button>
+          <button className={`tab ${tab === 'active' ? 'active' : ''}`} onClick={() => setTab('active')}>
+            Active
+          </button>
           <button className={`tab ${tab === 'approved' ? 'active' : ''}`} onClick={() => setTab('approved')}>
             Approved
           </button>

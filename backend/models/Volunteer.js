@@ -15,7 +15,8 @@ const volunteerSchema = new mongoose.Schema({
   },
   specialization: {
     type: String,
-    enum: ['Medical', 'Logistics', 'Management', 'Education', 'Other'],
+    enum: [null, 'Medical', 'Logistics', 'Management', 'Education', 'Other'],
+    default: null,
     required: function() {
       return this.type === 'specialized';
     }

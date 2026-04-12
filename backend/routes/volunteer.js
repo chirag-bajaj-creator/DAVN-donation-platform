@@ -56,6 +56,36 @@ router.get(
 );
 
 /**
+ * GET /api/volunteers/cases
+ * Get cases assigned to the logged-in volunteer
+ */
+router.get(
+  '/cases',
+  authenticate,
+  volunteerController.getCases
+);
+
+/**
+ * GET /api/volunteers/available-cases
+ * Get available unverified cases for volunteers
+ */
+router.get(
+  '/available-cases',
+  authenticate,
+  volunteerController.getAvailableCases
+);
+
+/**
+ * POST /api/volunteers/cases/:caseId/report
+ * Submit a verification report for a case
+ */
+router.post(
+  '/cases/:caseId/report',
+  authenticate,
+  volunteerController.submitReport
+);
+
+/**
  * PATCH /api/volunteers/:id/approve
  * Approve volunteer registration (admin only)
  */

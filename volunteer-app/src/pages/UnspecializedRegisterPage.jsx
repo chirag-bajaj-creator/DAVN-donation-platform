@@ -32,28 +32,37 @@ export default function UnspecializedRegisterPage() {
 
     try {
       setLoading(true);
-      const registerData = {
+
+      // Step 1: Create user account FIRST (this also auto-logs in and stores token)
+      await registerUser({
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email.trim().toLowerCase(),
+        phone: data.phone,
+        password: data.password,
+      });
+
+      // Step 2: Now register as volunteer (auth token is set from step 1)
+      await volunteerService.registerUnspecialized({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
         password: data.password,
         availability: data.availability,
-      };
-
-      // Register unspecialized volunteer
-      const response = await volunteerService.registerUnspecialized(registerData);
-
-      // Auto login after registration
-      await registerUser({
-        email: data.email,
-        password: data.password,
       });
 
       toast.success('Registration successful! Welcome to Volunteer Network!');
       navigate('/dashboard');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+      console.error('Registration error details:', error.response?.data);
+      let errorMessage = 'Registration failed. Please try again.';
+      if (error.response?.data?.details) {
+        errorMessage = error.response.data.details.map(d => d.message).join(', ');
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
       toast.error(errorMessage);
     } finally {
       setLoading(false);

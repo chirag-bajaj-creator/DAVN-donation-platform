@@ -4,6 +4,8 @@ const authorize = require('../middleware/authorize');
 const Donation = require('../models/Donation');
 const User = require('../models/User');
 const Volunteer = require('../models/Volunteer');
+const NeededIndividual = require('../models/NeededIndividual');
+const NeededOrganization = require('../models/NeededOrganization');
 
 const router = express.Router();
 
@@ -336,13 +338,13 @@ router.get(
       const parsedLimit = Math.min(parseInt(limit) || 10, 100);
       const skip = (parsedPage - 1) * parsedLimit;
 
-      // Get pending from User model (where role is 'user' and status is 'pending')
-      const needy = await User.find({ role: 'user', isActive: false })
+      // Get pending from NeededIndividual model
+      const needy = await NeededIndividual.find({ status: 'pending' })
         .limit(parsedLimit)
         .skip(skip)
         .sort({ createdAt: -1 });
 
-      const total = await User.countDocuments({ role: 'user', isActive: false });
+      const total = await NeededIndividual.countDocuments({ status: 'pending' });
 
       res.status(200).json({
         success: true,
@@ -352,7 +354,11 @@ router.get(
             name: n.name,
             email: n.email,
             phone: n.phone,
-            status: 'pending',
+            address: n.address,
+            type_of_need: n.type_of_need,
+            urgency: n.urgency,
+            description: n.description,
+            status: n.status,
             createdAt: n.createdAt
           })),
           total,
@@ -451,7 +457,7 @@ router.get(
       const pendingVolunteers = await Volunteer.countDocuments({ status: 'pending' });
       const totalDonations = await Donation.countDocuments();
       const approvedDonations = await Donation.countDocuments({ status: 'approved' });
-      const pendingVerification = await User.countDocuments({ isActive: false });
+      const pendingVerification = await NeededIndividual.countDocuments({ status: 'pending' });
 
       // Get donation stats
       const donationStats = await Donation.aggregate([

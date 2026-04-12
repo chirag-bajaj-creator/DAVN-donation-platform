@@ -27,7 +27,7 @@ export default function DashboardPage() {
         const response = await volunteerService.getAssignedCases();
         // Mock stats calculation - adjust based on actual API response
         setStats({
-          assignedCases: response.data?.length || 0,
+          assignedCases: response.data?.data?.length || 0,
           completedCases: 0,
           pendingReports: 0,
         });

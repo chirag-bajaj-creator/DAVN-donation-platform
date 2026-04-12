@@ -1,0 +1,105 @@
+PROJECT DOCUMENTATION (PART 1) Module: User Login & Donation System
+1. Module Title User Authentication and Multi-Category Donation Management System
+2. Abstract This module is the core entry point of the web-based donation platform designed to connect donors, volunteers, and needy individuals. It provides a structured and secure login system with role-based access (User and Admin). After authentication, users can access different service sections such as Donation, Needy, and Volunteer. The Donation section allows users to contribute in multiple forms including cash, food, shelter, medical aid, and basic needs. The system ensures smooth data collection, donation tracking, and efficient delivery coordination by forwarding donation details to volunteers for execution.
+3. Introduction In today's digital era, many people are willing to help others but lack a proper platform to do so efficiently. This project aims to bridge the gap between donors and needy individuals through a centralized web platform. The first module focuses on:
+� Secure user login system � Structured donation categories � Data collection for efficient resource distribution This system simplifies the donation process and ensures that contributions reach the right people through proper coordination.
+4. Problem Statement Despite the willingness of people to donate, there are several challenges:
+
+� Lack of a centralized donation platform � Inefficient tracking of donations � Difficulty in connecting donors with needy individuals � No proper system for managing different types of donations This module solves these issues by providing a structured and digital solution.
+5. Objectives � To create a secure login system for users and admins � To provide multiple donation categories in a single platform � To enable easy submission of donation details � To ensure proper communication with volunteers � To streamline the donation-to-delivery process
+6. System Overview Login System
+The system starts with a login interface where users must authenticate themselves. Roles:
+� User � Admin After successful login: � Users are redirected to the main dashboard � Admin has separate control (to be explained in next module)
+7. User Dashboard Structure After login, the user is directed to the main page containing three sections: User Dashboard   Donation
+
+ Needy  Volunteer In this module, we focus on the Donation Section
+8. Donation Section Structure Donation   Individual  Organisation Both categories provide the same donation options.
+9. Donation Categories & Workflow 1. Cash Donation
+
+Description: Allows users to donate money digitally. Workflow:
+1. User selects Cash 2. Enters details:
+o Name o Phone Number 3. System generates a QR Code 4. User scans and completes payment Key Feature: � Secure and quick digital payment system
+2. Food Donation
+
+Description: Users can donate cooked or packaged food. Workflow:
+1. User enters: o Name o Phone Number o Address
+2. Specifies: o Type of food o Quantity
+3. Submits request
+
+4. System forwards data to volunteer/delivery agent Key Feature:
+� Real-time coordination for food distribution
+3. Shelter Donation
+
+Description: Users can offer temporary or permanent shelter. Workflow:
+1. User enters personal details 2. Specifies:
+o Type of shelter (room, house, temporary stay) 3. Submits request Key Feature: � Helps homeless or displaced individuals
+4. Medical Support
+
+Description: Users can donate medicines or medical assistance. Workflow:
+1. User fills details 2. Provides:
+o Type of medicine/support o Doctor permission (if required) 3. Submits request Key Feature: � Ensures safe and verified medical help
+5. Basic Needs Donation
+
+Description: Users can donate essential items like:
+� Clothes � Blankets � Daily-use items Workflow: 1. User enters details 2. Specifies items 3. Submits donation Key Feature: � Supports everyday survival needs
+
+10. Data Flow (Simplified) User Input  Form Submission  Database Storage  Volunteer Notification  Delivery to Needy
+11. Key Features of Module � Role-based login system � Structured dashboard � Multi-category donation support � QR-based payment system � Real-time volunteer coordination � Easy-to-use interface
+12. Advantages � Centralized donation system � Easy and fast contribution process � Transparent and organized workflow � Supports multiple types of help � Scalable for future enhancements
+13. Conclusion (Module 1) This module forms the foundation of the project by enabling users to securely access the platform and contribute in various ways. It ensures that donations are properly recorded and forwarded for execution, making the system efficient and user-friendly.
+
+PROJECT DOCUMENTATION (PART 2) Module: Needy Registration & Verification System
+1. Module Title Needy Identification, Registration, and Verification System
+2. Abstract This module is designed to identify and manage individuals and organizations that require assistance. It provides a structured platform where needy entities can register their requirements and get verified before being listed publicly. The system ensures authenticity by incorporating an admin-controlled verification process supported by volunteers. Once verified, the needy entities are displayed in a transparent "Check" section, allowing donors to make informed decisions.
+3. Introduction One of the biggest challenges in donation systems is ensuring that help reaches genuine beneficiaries. Many platforms lack proper verification, leading to misuse of resources. This module addresses this issue by:
+� Allowing needy individuals and organizations to register � Implementing a verification system via admin and volunteers � Displaying only verified cases to donors This ensures trust, transparency, and efficient resource allocation.
+4. Problem Statement � Difficulty in identifying genuine needy individuals/organizations � Risk of fraud or misuse of donations � Lack of transparency in existing systems
+
+� No proper mechanism to verify requests before listing
+5. Objectives � To provide a platform for needy registration � To implement a verification mechanism � To display only verified and genuine cases � To categorize needy entities for easy access � To ensure trust between donors and recipients
+6. System Overview Structure of Needy Section: Needy Section   Organisation   Registration   Check   Individual
+ Registration  Check
+7. Organisation Section 7.1 Registration (Organisation) Description: Organizations in need (e.g., NGOs, hospitals, schools) can register their requirements. Input Details:
+� Organisation Name � Phone Number
+
+� Address � Type of Need (food, funds, medical, shelter, etc.) � Description of requirement Workflow: 1. Organisation fills registration form 2. Submits request 3. Data is stored in the system 4. Request is forwarded to Admin Panel
+7.2 Verification Process
+
+Description: Ensures that only genuine organizations are approved. Steps:
+1. Admin receives registration request 2. Admin assigns a volunteer for verification 3. Volunteer checks the organization anonymously 4. Volunteer submits verification report 5. Admin approves or rejects the request Key Feature:
+
+� Prevents fraud and ensures authenticity
+
+7.3 Check (Organisation) Description: Displays verified organizations to donors. Categories of Organisations:
+
+�
+
+Hospitals
+
+�
+
+Schools
+
+�
+
+Orphanages
+
+�  Disaster-affected areas Information Displayed:
+� Organisation Name � Location � Type of Need � Description Key Feature: � Only verified organizations are shown
+
+8. Individual Section 8.1 Registration (Individual) Description: Individuals in need can register themselves for assistance. Input Details:
+� Name � Phone Number � Address � Type of Need � Description of situation
+
+Workflow: 1. Individual fills the form 2. Submits request 3. Data goes to Admin Panel for verification
+8.2 Verification Process (Individual) Steps:
+1. Admin reviews request 2. Volunteer is assigned 3. Volunteer verifies the individual situation 4. Report submitted to admin 5. Admin approves/rejects Key Feature: � Ensures help reaches genuine individuals
+8.3 Check (Individual) Description: Displays verified individuals who need help. Information Displayed:
+� Name � Location � Type of Need � Situation Description Key Feature: � Transparent listing of verified needy people
+9. Data Flow (Needy Module)
+
+Registration  Admin Panel  Volunteer Verification  Approval/Rejection  Display in Check Section
+10. Key Features of Module � Dual structure: Organisation & Individual � Registration + Verification system � Admin-controlled approval process � Volunteer-based ground verification � Transparent "Check" listing � Categorized needy data
+11. Advantages � Prevents fake requests � Builds trust in the platform � Ensures fair distribution of resources � Easy identification of needy cases � Improves donor confidence
+12. Conclusion (Module 2) This module plays a crucial role in maintaining the credibility of the platform by ensuring that only verified and genuine needy individuals and organizations are listed. By integrating admin control and volunteer verification, the system achieves transparency, reliability, and efficiency.
+
+

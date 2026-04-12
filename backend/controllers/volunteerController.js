@@ -1,5 +1,8 @@
 const Volunteer = require('../models/Volunteer');
 const User = require('../models/User');
+const NeededIndividual = require('../models/NeededIndividual');
+const NeededOrganization = require('../models/NeededOrganization');
+const VerificationReport = require('../models/VerificationReport');
 
 const volunteerController = {
   /**
@@ -7,7 +10,7 @@ const volunteerController = {
    */
   registerSpecialized: async (req, res, next) => {
     try {
-      const { specialization, documents } = req.validatedData;
+      const { specialization, documents } = req.body;
       const userId = req.user.userId;
 
       if (!specialization) {
@@ -288,6 +291,161 @@ const volunteerController = {
           status: volunteer.status,
           verified_by: volunteer.verified_by,
           verifiedAt: volunteer.verifiedAt
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get cases assigned to the logged-in volunteer
+   */
+  getCases: async (req, res, next) => {
+    try {
+      const userId = req.user.userId;
+
+      // Get verification reports submitted by this volunteer
+      const reports = await VerificationReport.find({ verified_by: userId });
+      const verifiedNeedyIds = reports.map(r => r.needy_id);
+
+      // Get needy individuals assigned to (verified by) this volunteer
+      const assignedIndividuals = await NeededIndividual.find({
+        $or: [
+          { verified_by: userId },
+          { _id: { $in: verifiedNeedyIds } }
+        ]
+      });
+
+      const assignedOrgs = await NeededOrganization.find({
+        $or: [
+          { verified_by: userId },
+          { _id: { $in: verifiedNeedyIds } }
+        ]
+      });
+
+      const cases = [
+        ...assignedIndividuals.map(c => ({
+          _id: c._id,
+          type: 'individual',
+          name: c.name,
+          phone: c.phone,
+          address: c.address,
+          type_of_need: c.type_of_need,
+          urgency: c.urgency,
+          description: c.description,
+          status: c.status,
+          trustScore: c.trustScore,
+          createdAt: c.createdAt,
+        })),
+        ...assignedOrgs.map(c => ({
+          _id: c._id,
+          type: 'organization',
+          name: c.name,
+          phone: c.phone,
+          address: c.address,
+          type_of_need: c.type_of_need,
+          urgency: c.urgency,
+          description: c.description,
+          status: c.status,
+          trustScore: c.trustScore,
+          createdAt: c.createdAt,
+        })),
+      ];
+
+      res.status(200).json({
+        success: true,
+        data: cases,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get available (unverified) cases for volunteers to pick up
+   */
+  getAvailableCases: async (req, res, next) => {
+    try {
+      const { type_of_need, urgency, limit = 20, skip = 0 } = req.query;
+
+      const filter = { status: 'pending', isActive: true };
+      if (type_of_need) filter.type_of_need = type_of_need;
+      if (urgency) filter.urgency = urgency;
+
+      const parsedLimit = Math.min(parseInt(limit) || 20, 100);
+      const parsedSkip = parseInt(skip) || 0;
+
+      const cases = await NeededIndividual.find(filter)
+        .limit(parsedLimit)
+        .skip(parsedSkip)
+        .sort({ urgency: -1, createdAt: -1 });
+
+      const total = await NeededIndividual.countDocuments(filter);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          cases,
+          pagination: { limit: parsedLimit, skip: parsedSkip, total }
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Submit a verification report for a case
+   */
+  submitReport: async (req, res, next) => {
+    try {
+      const userId = req.user.userId;
+      const { caseId } = req.params;
+      const { trustScore, recommendation, verificationDetails, needy_type } = req.body;
+
+      // Check the case exists
+      const needyModel = needy_type === 'NeededOrganization' ? NeededOrganization : NeededIndividual;
+      const needyCase = await needyModel.findById(caseId);
+
+      if (!needyCase) {
+        return res.status(404).json({
+          success: false,
+          error: 'Case not found',
+          code: 'NOT_FOUND',
+          timestamp: new Date()
+        });
+      }
+
+      const report = new VerificationReport({
+        needy_id: caseId,
+        needy_type: needy_type || 'NeededIndividual',
+        verified_by: userId,
+        trustScore: trustScore || 0,
+        recommendation: recommendation || 'hold',
+        verificationDetails: verificationDetails || {},
+      });
+
+      await report.save();
+
+      // Update the needy record
+      needyCase.verified_by = userId;
+      needyCase.status = 'verified';
+      needyCase.trustScore = trustScore || 0;
+      await needyCase.save();
+
+      res.status(201).json({
+        success: true,
+        message: 'Verification report submitted successfully',
+        data: {
+          report_id: report._id,
+          needy_id: caseId,
+          status: report.status,
+          recommendation: report.recommendation,
+          createdAt: report.createdAt,
         },
         timestamp: new Date()
       });

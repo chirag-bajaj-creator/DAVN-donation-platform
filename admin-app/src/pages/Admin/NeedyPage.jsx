@@ -19,7 +19,7 @@ export default function NeedyPage() {
     try {
       setLoading(true);
       const needyRes = await adminService.getPendingNeedy(1, 50);
-      const volRes = await adminService.getVolunteers(1, 100, 'approved');
+      const volRes = await adminService.getVolunteers(1, 100);
       setNeedy(needyRes.data.needy);
       setVolunteers(volRes.data.volunteers);
     } catch (err) {

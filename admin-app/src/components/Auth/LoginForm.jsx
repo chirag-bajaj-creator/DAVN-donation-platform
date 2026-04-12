@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../hooks';
-import { validateEmail } from '../../utils/validation';
+import { validateEmail, validatePassword } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,7 +28,7 @@ export default function LoginForm() {
   const onSubmit = async (data) => {
     try {
       setApiError('');
-      await login({ email: data.email, password: data.password });
+      await login({ email: data.email.trim().toLowerCase(), password: data.password.trim() });
 
       // Handle remember email
       if (data.rememberMe) {
@@ -100,7 +100,7 @@ export default function LoginForm() {
             placeholder="••••••••"
             {...register('password', {
               required: 'Password is required',
-              minLength: { value: 1, message: 'Password is required' },
+              validate: validatePassword,
             })}
             disabled={isLoading}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"

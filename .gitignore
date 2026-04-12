@@ -1,5 +1,4 @@
-# Claude Code
-.claude/
+
 
 # Dependencies
 node_modules/
@@ -38,10 +37,3 @@ pids/
 *.seed
 *.pid.lock
 
-# Temporary files
-*.tmp
-*.temp
-image.png
-output_agent/
-output_summary/
-complete/

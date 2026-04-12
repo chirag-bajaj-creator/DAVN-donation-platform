@@ -20,7 +20,7 @@ export default function MyTasksPage() {
       try {
         setLoading(true);
         const response = await volunteerService.getAssignedCases();
-        setTasks(response.data || []);
+        setTasks(response.data?.data || []);
       } catch (error) {
         console.error('Failed to fetch tasks:', error);
         toast.error('Failed to load tasks');
