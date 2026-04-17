@@ -3,8 +3,31 @@ const User = require('../models/User');
 const NeededIndividual = require('../models/NeededIndividual');
 const NeededOrganization = require('../models/NeededOrganization');
 const VerificationReport = require('../models/VerificationReport');
+const { emitRealtimeUpdate } = require('../services/socketService');
+
+function normalizeNeedyType(needyType) {
+  if (needyType === 'NeededOrganization' || needyType === 'organization') {
+    return 'NeededOrganization';
+  }
+
+  return 'NeededIndividual';
+}
 
 const volunteerController = {
+  findCaseById: async (caseId) => {
+    const individual = await NeededIndividual.findById(caseId);
+    if (individual) {
+      return { needyCase: individual, needyType: 'NeededIndividual' };
+    }
+
+    const organization = await NeededOrganization.findById(caseId);
+    if (organization) {
+      return { needyCase: organization, needyType: 'NeededOrganization' };
+    }
+
+    return { needyCase: null, needyType: null };
+  },
+
   /**
    * Register as specialized volunteer
    */
@@ -336,19 +359,21 @@ const volunteerController = {
           urgency: c.urgency,
           description: c.description,
           status: c.status,
+          uiStatus: c.status === 'pending' && c.verified_by?.toString() === userId ? 'accepted' : c.status,
           trustScore: c.trustScore,
           createdAt: c.createdAt,
         })),
         ...assignedOrgs.map(c => ({
           _id: c._id,
           type: 'organization',
-          name: c.name,
+          name: c.org_name,
           phone: c.phone,
           address: c.address,
           type_of_need: c.type_of_need,
           urgency: c.urgency,
           description: c.description,
           status: c.status,
+          uiStatus: c.status === 'pending' && c.verified_by?.toString() === userId ? 'accepted' : c.status,
           trustScore: c.trustScore,
           createdAt: c.createdAt,
         })),
@@ -399,6 +424,139 @@ const volunteerController = {
   },
 
   /**
+   * Accept a case assigned to or claimed by the logged-in volunteer
+   */
+  acceptCase: async (req, res, next) => {
+    try {
+      const userId = req.user.userId;
+      const { caseId } = req.params;
+
+      const { needyCase, needyType } = await volunteerController.findCaseById(caseId);
+
+      if (!needyCase) {
+        return res.status(404).json({
+          success: false,
+          error: 'Case not found',
+          code: 'NOT_FOUND',
+          timestamp: new Date()
+        });
+      }
+
+      if (needyCase.status !== 'pending') {
+        return res.status(422).json({
+          success: false,
+          error: `Cannot accept case with status: ${needyCase.status}`,
+          code: 'INVALID_STATUS',
+          timestamp: new Date()
+        });
+      }
+
+      if (needyCase.verified_by && needyCase.verified_by.toString() !== userId) {
+        return res.status(409).json({
+          success: false,
+          error: 'Case is already assigned to another volunteer',
+          code: 'ALREADY_ASSIGNED',
+          timestamp: new Date()
+        });
+      }
+
+      needyCase.verified_by = userId;
+      needyCase.updatedAt = new Date();
+      await needyCase.save();
+
+      emitRealtimeUpdate({
+        adminEvent: 'admin:case-updated',
+        userId,
+        userEvent: 'volunteer:case-updated',
+        payload: {
+          caseId: needyCase._id,
+          needyType,
+          action: 'accepted',
+          status: needyCase.status,
+          updatedAt: needyCase.updatedAt
+        }
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Case accepted successfully',
+        data: {
+          _id: needyCase._id,
+          needy_type: needyType,
+          status: needyCase.status,
+          verified_by: needyCase.verified_by,
+          updatedAt: needyCase.updatedAt
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Reject a case currently assigned to the logged-in volunteer
+   */
+  rejectCase: async (req, res, next) => {
+    try {
+      const userId = req.user.userId;
+      const { caseId } = req.params;
+
+      const { needyCase, needyType } = await volunteerController.findCaseById(caseId);
+
+      if (!needyCase) {
+        return res.status(404).json({
+          success: false,
+          error: 'Case not found',
+          code: 'NOT_FOUND',
+          timestamp: new Date()
+        });
+      }
+
+      if (!needyCase.verified_by || needyCase.verified_by.toString() !== userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only reject cases assigned to you',
+          code: 'FORBIDDEN',
+          timestamp: new Date()
+        });
+      }
+
+      needyCase.verified_by = null;
+      needyCase.updatedAt = new Date();
+      await needyCase.save();
+
+      emitRealtimeUpdate({
+        adminEvent: 'admin:case-updated',
+        userId,
+        userEvent: 'volunteer:case-updated',
+        payload: {
+          caseId: needyCase._id,
+          needyType,
+          action: 'rejected',
+          status: needyCase.status,
+          updatedAt: needyCase.updatedAt
+        }
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Case rejected successfully',
+        data: {
+          _id: needyCase._id,
+          needy_type: needyType,
+          status: needyCase.status,
+          verified_by: needyCase.verified_by,
+          updatedAt: needyCase.updatedAt
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * Submit a verification report for a case
    */
   submitReport: async (req, res, next) => {
@@ -408,7 +566,10 @@ const volunteerController = {
       const { trustScore, recommendation, verificationDetails, needy_type } = req.body;
 
       // Check the case exists
-      const needyModel = needy_type === 'NeededOrganization' ? NeededOrganization : NeededIndividual;
+      const resolvedType = normalizeNeedyType(needy_type || req.query.needyType);
+      const needyModel = resolvedType === 'NeededOrganization'
+        ? NeededOrganization
+        : NeededIndividual;
       const needyCase = await needyModel.findById(caseId);
 
       if (!needyCase) {
@@ -422,7 +583,7 @@ const volunteerController = {
 
       const report = new VerificationReport({
         needy_id: caseId,
-        needy_type: needy_type || 'NeededIndividual',
+        needy_type: resolvedType,
         verified_by: userId,
         trustScore: trustScore || 0,
         recommendation: recommendation || 'hold',
@@ -437,12 +598,27 @@ const volunteerController = {
       needyCase.trustScore = trustScore || 0;
       await needyCase.save();
 
+      emitRealtimeUpdate({
+        adminEvent: 'admin:report-submitted',
+        userId,
+        userEvent: 'volunteer:report-submitted',
+        payload: {
+          caseId,
+          reportId: report._id,
+          needyType: report.needy_type,
+          recommendation: report.recommendation,
+          trustScore: report.trustScore,
+          createdAt: report.createdAt
+        }
+      });
+
       res.status(201).json({
         success: true,
         message: 'Verification report submitted successfully',
         data: {
           report_id: report._id,
           needy_id: caseId,
+          needy_type: report.needy_type,
           status: report.status,
           recommendation: report.recommendation,
           createdAt: report.createdAt,

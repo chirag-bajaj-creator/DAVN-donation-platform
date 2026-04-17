@@ -5,6 +5,14 @@ import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import volunteerService from '../services/volunteerService';
 
+function normalizeNeedyType(needyType) {
+  if (needyType === 'NeededOrganization' || needyType === 'organization') {
+    return 'NeededOrganization';
+  }
+
+  return 'NeededIndividual';
+}
+
 export default function SubmitReportPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -12,6 +20,7 @@ export default function SubmitReportPage() {
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const taskId = searchParams.get('taskId');
+  const needyType = searchParams.get('needyType');
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -35,23 +44,38 @@ export default function SubmitReportPage() {
 
     try {
       setLoading(true);
-      const formData = new FormData();
-
-      formData.append('description', data.description);
-      formData.append('findings', data.findings);
-      formData.append('recommendations', data.recommendations);
-      formData.append('verificationStatus', data.verificationStatus);
-
-      if (photoFile) {
-        formData.append('photo', photoFile);
-      }
-
-      await volunteerService.submitReport(taskId, formData);
+      const normalizedNeedyType = normalizeNeedyType(needyType);
+      await volunteerService.submitReport(
+        taskId,
+        {
+          trustScore:
+            data.verificationStatus === 'verified'
+              ? 85
+              : data.verificationStatus === 'partial'
+                ? 60
+                : 25,
+          recommendation:
+            data.verificationStatus === 'verified'
+              ? 'approve'
+              : data.verificationStatus === 'partial'
+                ? 'hold'
+                : 'reject',
+          verificationDetails: {
+            description: data.description,
+            findings: data.findings,
+            recommendations: data.recommendations,
+            verificationStatus: data.verificationStatus,
+            photoName: photoFile?.name || null,
+          },
+          needy_type: normalizedNeedyType,
+        },
+        normalizedNeedyType
+      );
 
       toast.success('Report submitted successfully!');
       navigate('/my-tasks');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to submit report';
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to submit report';
       toast.error(errorMessage);
     } finally {
       setLoading(false);

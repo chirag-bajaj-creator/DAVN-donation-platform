@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { adminService } from '../../services/adminService';
+import { adminService, getAdminSocket } from '../../services/adminService';
 import AdminLayout from '../../components/layout/AdminLayout';
 import Loading from '../../components/Common/Loading';
 
@@ -14,6 +14,26 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchStats();
+
+    const socket = getAdminSocket();
+
+    if (socket) {
+      const handleRealtimeRefresh = () => {
+        fetchStats();
+      };
+
+      socket.on('admin:assignment-created', handleRealtimeRefresh);
+      socket.on('admin:case-updated', handleRealtimeRefresh);
+      socket.on('admin:report-submitted', handleRealtimeRefresh);
+      socket.on('admin:volunteer-updated', handleRealtimeRefresh);
+
+      return () => {
+        socket.off('admin:assignment-created', handleRealtimeRefresh);
+        socket.off('admin:case-updated', handleRealtimeRefresh);
+        socket.off('admin:report-submitted', handleRealtimeRefresh);
+        socket.off('admin:volunteer-updated', handleRealtimeRefresh);
+      };
+    }
   }, []);
 
   const fetchStats = async () => {

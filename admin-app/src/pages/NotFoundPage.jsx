@@ -11,7 +11,7 @@ export default function NotFoundPage() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link to={isAuthenticated ? '/dashboard' : '/login'} className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
-            Hravinder
+            Admin Portal
           </Link>
           <p className="text-gray-600 text-sm">Donation Platform</p>
         </div>
@@ -62,7 +62,7 @@ export default function NotFoundPage() {
           <div className="mt-8 text-center">
             <p className="text-gray-600 text-sm">
               Need help?{' '}
-              <a href="mailto:support@hravinder.com" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
+              <a href="mailto:support@example.com" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
                 Contact Support
               </a>
             </p>
@@ -73,7 +73,7 @@ export default function NotFoundPage() {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-gray-600">
-          <span>© 2026 Hravinder. All rights reserved.</span>
+          <span>© 2026 Admin Portal. All rights reserved.</span>
         </div>
       </footer>
     </div>

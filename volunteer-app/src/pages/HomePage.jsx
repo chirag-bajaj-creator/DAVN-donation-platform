@@ -6,14 +6,20 @@ import LoginModal from '../components/LoginModal';
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && !loading) {
+    if (isAuthenticated && !loading && user?.role === 'volunteer') {
       navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading, navigate, user]);
+
+  useEffect(() => {
+    if (isAuthenticated && !loading && user && user.role !== 'volunteer') {
+      logout();
+    }
+  }, [isAuthenticated, loading, logout, user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,7 +44,7 @@ export default function HomePage() {
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '24px', fontWeight: 'bold', backgroundImage: 'linear-gradient(135deg, #0ea5e9, #a855f7)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Hravinder Volunteers
+            Volunteer Network
           </div>
           <button onClick={() => setIsLoginOpen(true)} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}>
             Sign In
@@ -104,7 +110,7 @@ export default function HomePage() {
       <footer style={{ backgroundColor: '#111827', color: '#9ca3af', padding: '48px 16px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ borderTop: '1px solid #374151', paddingTop: '32px', textAlign: 'center', fontSize: '14px' }}>
-            <p>&copy; 2024 Hravinder. All rights reserved.</p>
+            <p>&copy; 2024 Volunteer Network. All rights reserved.</p>
           </div>
         </div>
       </footer>

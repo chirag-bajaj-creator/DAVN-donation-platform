@@ -19,11 +19,15 @@ export default function LoginPage() {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      await login(data);
+      await login(data, { allowedRoles: ['volunteer'] });
       toast.success('Logged in successfully!');
       navigate('/dashboard');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      const errorMessage =
+        error.message ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Login failed. Please try again.';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -62,7 +66,7 @@ export default function LoginPage() {
           position: 'relative'
         }}>
           <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, marginBottom: '4px' }}>Volunteer Sign In</h2>
-          <p style={{ fontSize: '12px', opacity: 0.9, margin: 0 }}>Hravinder Verification Portal</p>
+          <p style={{ fontSize: '12px', opacity: 0.9, margin: 0 }}>Volunteer Verification Portal</p>
         </div>
 
         {/* Form Content */}

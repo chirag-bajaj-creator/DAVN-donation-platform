@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useContext } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -14,7 +15,9 @@ import MyTasksPage from './pages/MyTasksPage';
 import SubmitReportPage from './pages/SubmitReportPage';
 
 // Protected Route Component
-function ProtectedRoute({ element, isAuthenticated, loading }) {
+function ProtectedRoute({ element, allowedRoles = ['volunteer'] }) {
+  const { isAuthenticated, loading, user } = useContext(AuthContext);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -30,7 +33,16 @@ function ProtectedRoute({ element, isAuthenticated, loading }) {
     );
   }
 
-  return isAuthenticated ? element : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const normalizedRole = (user?.role || '').toLowerCase();
+  const normalizedAllowedRoles = allowedRoles.map((role) => role.toLowerCase());
+
+  return normalizedAllowedRoles.includes(normalizedRole)
+    ? element
+    : <Navigate to="/" replace />;
 }
 
 function App() {
@@ -58,9 +70,9 @@ function App() {
           <Route path="/register/unspecialized" element={<UnspecializedRegisterPage />} />
 
           {/* Protected Routes */}
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/my-tasks" element={<MyTasksPage />} />
-          <Route path="/submit-report" element={<SubmitReportPage />} />
+          <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} />
+          <Route path="/my-tasks" element={<ProtectedRoute element={<MyTasksPage />} />} />
+          <Route path="/submit-report" element={<ProtectedRoute element={<SubmitReportPage />} />} />
 
           {/* 404 Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -8,7 +8,7 @@ import volunteerService from '../services/volunteerService';
 
 export default function UnspecializedRegisterPage() {
   const navigate = useNavigate();
-  const { register: registerUser } = useContext(AuthContext);
+  const { register: registerUser, login } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -50,6 +50,11 @@ export default function UnspecializedRegisterPage() {
         password: data.password,
         availability: data.availability,
       });
+
+      await login({
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+      }, { allowedRoles: ['volunteer'] });
 
       toast.success('Registration successful! Welcome to Volunteer Network!');
       navigate('/dashboard');

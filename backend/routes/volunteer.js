@@ -86,6 +86,26 @@ router.post(
 );
 
 /**
+ * POST /api/volunteers/cases/:caseId/accept
+ * Accept a case for verification
+ */
+router.post(
+  '/cases/:caseId/accept',
+  authenticate,
+  volunteerController.acceptCase
+);
+
+/**
+ * POST /api/volunteers/cases/:caseId/reject
+ * Reject/unassign a case for the logged-in volunteer
+ */
+router.post(
+  '/cases/:caseId/reject',
+  authenticate,
+  volunteerController.rejectCase
+);
+
+/**
  * PATCH /api/volunteers/:id/approve
  * Approve volunteer registration (admin only)
  */

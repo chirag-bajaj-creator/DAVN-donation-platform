@@ -1,4 +1,41 @@
 import apiClient from './api';
+import { io } from 'socket.io-client';
+
+const SOCKET_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+let volunteerSocket;
+
+export const getVolunteerSocket = () => {
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    return null;
+  }
+
+  if (!volunteerSocket) {
+    volunteerSocket = io(SOCKET_URL, {
+      auth: {
+        token: `Bearer ${token}`
+      },
+      transports: ['websocket', 'polling']
+    });
+  } else if (!volunteerSocket.connected) {
+    volunteerSocket.auth = {
+      token: `Bearer ${token}`
+    };
+    volunteerSocket.connect();
+  }
+
+  return volunteerSocket;
+};
+
+export const disconnectVolunteerSocket = () => {
+  if (!volunteerSocket) {
+    return;
+  }
+
+  volunteerSocket.disconnect();
+  volunteerSocket = null;
+};
 
 const volunteerService = {
   // Get current volunteer profile
@@ -11,28 +48,13 @@ const volunteerService = {
     return apiClient.get('/volunteers', { params: filters });
   },
 
-  // Register as specialized volunteer with documents
+  // Register as specialized volunteer.
+  // The current backend route accepts JSON and does not parse multipart form data.
   registerSpecialized: (userData) => {
-    const formData = new FormData();
-
-    // Add basic fields
-    formData.append('firstName', userData.firstName);
-    formData.append('lastName', userData.lastName);
-    formData.append('email', userData.email);
-    formData.append('phone', userData.phone);
-    formData.append('password', userData.password);
-    formData.append('specialization', userData.specialization);
-    formData.append('experience', userData.experience);
-
-    // Add document if provided
-    if (userData.certificationDocument) {
-      formData.append('certificationDocument', userData.certificationDocument);
-    }
-
-    return apiClient.post('/volunteers/register/specialized', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    return apiClient.post('/volunteers/register/specialized', {
+      specialization: userData.specialization,
+      experience: userData.experience,
+      documents: userData.documents || [],
     });
   },
 
@@ -54,8 +76,10 @@ const volunteerService = {
   },
 
   // Submit verification report for a case
-  submitReport: (caseId, reportData) => {
-    return apiClient.post(`/volunteers/cases/${caseId}/report`, reportData);
+  submitReport: (caseId, reportData, needyType) => {
+    return apiClient.post(`/volunteers/cases/${caseId}/report`, reportData, {
+      params: needyType ? { needyType } : undefined,
+    });
   },
 
   // Get available needy cases

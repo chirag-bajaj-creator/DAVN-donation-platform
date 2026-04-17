@@ -1,7 +1,18 @@
 import React, { createContext, useState, useCallback, useEffect, useContext } from 'react';
 import authService from '../services/authService';
+import { disconnectVolunteerSocket } from '../services/volunteerService';
 
 export const AuthContext = createContext();
+const VOLUNTEER_ROLE = 'volunteer';
+
+function normalizeRole(role) {
+  return (role || '').toLowerCase();
+}
+
+function clearVolunteerSession() {
+  disconnectVolunteerSocket();
+  authService.logout();
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,11 +29,17 @@ export const AuthProvider = ({ children }) => {
         if (token && storedUser) {
           // Both token and user exist - restore auth state
           const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
+          if (normalizeRole(userData.role) === VOLUNTEER_ROLE) {
+            setUser(userData);
+            setIsAuthenticated(true);
+          } else {
+            clearVolunteerSession();
+            setUser(null);
+            setIsAuthenticated(false);
+          }
         } else if (token || storedUser) {
           // One exists but not the other - clear both (corrupted state)
-          authService.logout();
+          clearVolunteerSession();
           setUser(null);
           setIsAuthenticated(false);
         } else {
@@ -32,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        authService.logout();
+        clearVolunteerSession();
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -43,12 +60,25 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = useCallback(async (credentials) => {
+  const login = useCallback(async (credentials, options = {}) => {
     try {
       setLoading(true);
       const response = await authService.login(credentials);
       const { accessToken, refreshToken } = response.data.tokens;
       const { user_id, email, role, name } = response.data.data;
+      const allowedRoles = options.allowedRoles ?? [VOLUNTEER_ROLE];
+      const normalizedRole = normalizeRole(role);
+
+      if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
+        const normalizedAllowedRoles = allowedRoles.map(normalizeRole);
+
+        if (!normalizedAllowedRoles.includes(normalizedRole)) {
+          clearVolunteerSession();
+          const roleError = new Error('Volunteer account required to sign in to the volunteer app.');
+          roleError.code = 'ROLE_MISMATCH';
+          throw roleError;
+        }
+      }
 
       // Prepare user data
       const userData = {
@@ -74,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (error) {
       // Clear any partial state on error
-      authService.logout();
+      clearVolunteerSession();
       setUser(null);
       setIsAuthenticated(false);
       throw error;
@@ -114,7 +144,7 @@ export const AuthProvider = ({ children }) => {
       return user;
     } catch (error) {
       // Clear any partial state on error
-      authService.logout();
+      clearVolunteerSession();
       setUser(null);
       setIsAuthenticated(false);
       throw error;
@@ -126,6 +156,7 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       setLoading(true);
+      clearVolunteerSession();
       await authService.logout();
       // Clear localStorage explicitly
       localStorage.removeItem('user');
@@ -134,6 +165,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout failed:', error);
       // Force clear even if logout API fails
+      clearVolunteerSession();
       localStorage.removeItem('user');
       setUser(null);
       setIsAuthenticated(false);

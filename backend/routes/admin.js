@@ -6,6 +6,9 @@ const User = require('../models/User');
 const Volunteer = require('../models/Volunteer');
 const NeededIndividual = require('../models/NeededIndividual');
 const NeededOrganization = require('../models/NeededOrganization');
+const VerificationReport = require('../models/VerificationReport');
+const reportPdfService = require('../services/reportPdfService');
+const { emitRealtimeUpdate, emitToAdmins } = require('../services/socketService');
 
 const router = express.Router();
 
@@ -270,6 +273,12 @@ router.patch(
         });
       }
 
+      emitToAdmins('admin:volunteer-updated', {
+        volunteerId: volunteer._id,
+        status: volunteer.status,
+        updatedAt: volunteer.updatedAt
+      });
+
       res.status(200).json({
         success: true,
         message: 'Volunteer approved successfully',
@@ -309,6 +318,12 @@ router.patch(
           timestamp: new Date()
         });
       }
+
+      emitToAdmins('admin:volunteer-updated', {
+        volunteerId: volunteer._id,
+        status: volunteer.status,
+        updatedAt: volunteer.updatedAt
+      });
 
       res.status(200).json({
         success: true,
@@ -398,7 +413,7 @@ router.post(
         });
       }
 
-      const needy = await User.findById(id);
+      const needy = await NeededIndividual.findById(id);
       if (!needy) {
         return res.status(404).json({
           success: false,
@@ -408,7 +423,7 @@ router.post(
         });
       }
 
-      const volunteer = await Volunteer.findById(volunteerId);
+      const volunteer = await Volunteer.findById(volunteerId).populate('user_id', 'name email');
       if (!volunteer) {
         return res.status(404).json({
           success: false,
@@ -418,11 +433,62 @@ router.post(
         });
       }
 
-      // Update needy with assigned volunteer and activate
-      await User.findByIdAndUpdate(id, {
-        isActive: true,
-        assignedVolunteer: volunteerId,
-        updatedAt: new Date()
+      if (!volunteer.user_id) {
+        return res.status(422).json({
+          success: false,
+          error: 'Volunteer user account is missing',
+          code: 'VOLUNTEER_USER_MISSING',
+          timestamp: new Date()
+        });
+      }
+
+      if (!['approved', 'active'].includes(volunteer.status)) {
+        return res.status(422).json({
+          success: false,
+          error: 'Only approved or active volunteers can be assigned',
+          code: 'VOLUNTEER_NOT_ASSIGNABLE',
+          timestamp: new Date()
+        });
+      }
+
+      const existingAssignment = await VerificationReport.findOne({
+        needy_id: id,
+        needy_type: 'NeededIndividual',
+        verified_by: volunteer.user_id._id,
+        status: 'pending'
+      });
+
+      if (existingAssignment) {
+        return res.status(422).json({
+          success: false,
+          error: 'This volunteer is already assigned to this needy case',
+          code: 'ASSIGNMENT_EXISTS',
+          timestamp: new Date()
+        });
+      }
+
+      const report = new VerificationReport({
+        needy_id: id,
+        needy_type: 'NeededIndividual',
+        verified_by: volunteer.user_id._id,
+        status: 'pending',
+        trustScore: 0,
+        recommendation: 'hold'
+      });
+
+      await report.save();
+
+      emitRealtimeUpdate({
+        adminEvent: 'admin:assignment-created',
+        userId: volunteer.user_id._id,
+        userEvent: 'volunteer:assignment-created',
+        payload: {
+          needyId: id,
+          volunteerId: volunteer._id,
+          volunteerUserId: volunteer.user_id._id,
+          volunteerName: volunteer.user_id.name || volunteer.user_id.email,
+          reportId: report._id
+        }
       });
 
       res.status(200).json({
@@ -430,11 +496,101 @@ router.post(
         message: 'Volunteer assigned successfully',
         data: {
           needyId: id,
-          volunteerId: volunteerId,
-          volunteerName: volunteer.name
+          volunteerId: volunteer._id,
+          volunteerUserId: volunteer.user_id._id,
+          volunteerName: volunteer.user_id.name || volunteer.user_id.email,
+          reportId: report._id
         },
         timestamp: new Date()
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/admin/verification-reports
+ * Get submitted verification reports (admin only)
+ */
+router.get(
+  '/verification-reports',
+  authenticate,
+  authorize(['admin']),
+  async (req, res, next) => {
+    try {
+      const { limit = 20, skip = 0 } = req.query;
+
+      const parsedLimit = Math.min(parseInt(limit) || 20, 100);
+      const parsedSkip = parseInt(skip) || 0;
+
+      const reports = await VerificationReport.find({})
+        .populate('verified_by', 'name email')
+        .limit(parsedLimit)
+        .skip(parsedSkip)
+        .sort({ createdAt: -1 });
+
+      const total = await VerificationReport.countDocuments();
+
+      res.status(200).json({
+        success: true,
+        data: {
+          reports: reports.map(report => ({
+            _id: report._id,
+            needy_id: report.needy_id,
+            needy_type: report.needy_type,
+            verified_by: report.verified_by,
+            status: report.status,
+            trustScore: report.trustScore,
+            recommendation: report.recommendation,
+            verificationDetails: report.verificationDetails,
+            createdAt: report.createdAt,
+            verifiedAt: report.verifiedAt
+          })),
+          pagination: {
+            limit: parsedLimit,
+            skip: parsedSkip,
+            total
+          }
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/admin/verification-reports/:id/pdf
+ * Download a verification report as PDF (admin only)
+ */
+router.get(
+  '/verification-reports/:id/pdf',
+  authenticate,
+  authorize(['admin']),
+  async (req, res, next) => {
+    try {
+      const report = await VerificationReport.findById(req.params.id)
+        .populate('verified_by', 'name email');
+
+      if (!report) {
+        return res.status(404).json({
+          success: false,
+          error: 'Verification report not found',
+          code: 'NOT_FOUND',
+          timestamp: new Date()
+        });
+      }
+
+      const pdfBuffer = reportPdfService.createPdfBuffer(report);
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="verification-report-${report._id}.pdf"`
+      );
+      res.send(pdfBuffer);
     } catch (error) {
       next(error);
     }

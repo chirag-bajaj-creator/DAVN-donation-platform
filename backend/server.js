@@ -1,10 +1,13 @@
 require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
+const { Server } = require('socket.io');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -19,13 +22,16 @@ const adminRoutes = require('./routes/admin');
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 const authenticate = require('./middleware/authenticate');
+const { setSocketServer } = require('./services/socketService');
 
 const app = express();
+const server = http.createServer(app);
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -50,6 +56,48 @@ const authLimiter = rateLimit({
 // app.use('/api/', limiter);
 // app.use('/api/auth/login', authLimiter);
 // app.use('/api/auth/register', authLimiter);
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true
+  }
+});
+
+io.use((socket, next) => {
+  try {
+    const authHeader = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+    const token = authHeader?.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : authHeader;
+
+    if (!token) {
+      return next(new Error('Authentication token is required'));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = {
+      userId: decoded.userId,
+      role: decoded.role
+    };
+
+    return next();
+  } catch (error) {
+    return next(new Error('Invalid authentication token'));
+  }
+});
+
+io.on('connection', (socket) => {
+  const { userId, role } = socket.user;
+
+  socket.join(`user:${userId}`);
+
+  if (role === 'admin') {
+    socket.join('role:admin');
+  }
+});
+
+setSocketServer(io);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -95,7 +143,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`✓ Server running on port ${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
 });

@@ -79,7 +79,7 @@ export default function Layout({ children }) {
       <footer style={{ backgroundColor: '#111827', color: '#9ca3af', padding: '48px 16px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ borderTop: '1px solid #374151', paddingTop: '32px', textAlign: 'center', fontSize: '14px' }}>
-            <p>&copy; 2026 Hravinder. All rights reserved.</p>
+            <p>&copy; 2026 Volunteer Network. All rights reserved.</p>
           </div>
         </div>
       </footer>

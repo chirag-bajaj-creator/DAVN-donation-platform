@@ -8,7 +8,7 @@ import volunteerService from '../services/volunteerService';
 
 export default function SpecializedRegisterPage() {
   const navigate = useNavigate();
-  const { register: registerUser } = useContext(AuthContext);
+  const { register: registerUser, login } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [docFile, setDocFile] = useState(null);
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
@@ -26,41 +26,86 @@ export default function SpecializedRegisterPage() {
 
   const password = watch('password');
 
+  const normalizePhone = (phone) => phone.replace(/\D/g, '');
+
+  const specializationOptions = [
+    { value: 'Medical', label: 'Doctor / Medical' },
+    { value: 'Logistics', label: 'Engineer / Logistics' },
+    { value: 'Education', label: 'Teacher / Education' },
+    { value: 'Management', label: 'Counselor / Management' },
+    { value: 'Other', label: 'Plumber' },
+    { value: 'Other', label: 'Electrician' },
+    { value: 'Other', label: 'Carpenter' },
+  ];
+
   const onSubmit = async (data) => {
     if (data.password !== data.confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
 
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const normalizedPhone = normalizePhone(data.phone);
+
+    if (normalizedPhone.length !== 10) {
+      toast.error('Phone must be a 10-digit number');
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Step 1: Create user account FIRST (this also auto-logs in and stores token)
-      await registerUser({
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email.trim().toLowerCase(),
-        phone: data.phone,
-        password: data.password,
-      });
+      // Step 1: Create the user account. If a previous attempt already created
+      // it, log in and continue the volunteer registration flow.
+      try {
+        await registerUser({
+          name: `${data.firstName} ${data.lastName}`.trim(),
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          password: data.password,
+        });
+      } catch (authError) {
+        const authCode = authError.response?.data?.code;
+        const authMessage = authError.response?.data?.error;
 
-      // Step 2: Now register as specialized volunteer (auth token is set from step 1)
+        if (authCode === 'USER_EXISTS' && authMessage === 'Email already registered') {
+          try {
+            await login({
+              email: normalizedEmail,
+              password: data.password,
+            }, { allowedRoles: [] });
+          } catch (loginError) {
+            if (loginError.response?.data?.code === 'INVALID_CREDENTIALS') {
+              throw new Error('An account with this email already exists with a different password. Log in with the existing account or use a different email.');
+            }
+
+            throw loginError;
+          }
+        } else {
+          throw authError;
+        }
+      }
+
+      // Step 2: Register as specialized volunteer using the authenticated user.
       await volunteerService.registerSpecialized({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
         specialization: data.specialization,
         experience: data.experience,
-        certificationDocument: docFile,
+        documents: docFile ? [{ filename: docFile.name }] : [],
       });
+
+      await login({
+        email: normalizedEmail,
+        password: data.password,
+      }, { allowedRoles: ['volunteer'] });
 
       toast.success('Registration successful! Welcome to Volunteer Network!');
       navigate('/dashboard');
     } catch (error) {
       console.error('Registration error details:', error.response?.data);
       let errorMessage = 'Registration failed. Please try again.';
-      if (error.response?.data?.details) {
+      if (error.message && !error.response) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.details) {
         errorMessage = error.response.data.details.map(d => d.message).join(', ');
       } else if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
@@ -156,8 +201,11 @@ export default function SpecializedRegisterPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
             <input
               type="tel"
-              placeholder="+1234567890"
-              {...register('phone', { required: 'Phone number is required' })}
+              placeholder="9876543210"
+              {...register('phone', {
+                required: 'Phone number is required',
+                validate: (value) => normalizePhone(value).length === 10 || 'Phone must be a 10-digit number',
+              })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
@@ -171,13 +219,11 @@ export default function SpecializedRegisterPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Choose specialization...</option>
-              <option value="doctor">Doctor</option>
-              <option value="engineer">Engineer</option>
-              <option value="teacher">Teacher</option>
-              <option value="counselor">Counselor</option>
-              <option value="plumber">Plumber</option>
-              <option value="electrician">Electrician</option>
-              <option value="carpenter">Carpenter</option>
+              {specializationOptions.map((option) => (
+                <option key={`${option.value}-${option.label}`} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
             {errors.specialization && <p className="text-red-500 text-sm mt-1">{errors.specialization.message}</p>}
           </div>
@@ -205,7 +251,7 @@ export default function SpecializedRegisterPage() {
               onChange={(e) => setDocFile(e.target.files[0])}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
-            <p className="text-gray-500 text-sm mt-1">Accepted: PDF, DOC, DOCX, JPG, PNG</p>
+            <p className="text-gray-500 text-sm mt-1">Accepted: PDF, DOC, DOCX, JPG, PNG. The current API does not store this file during registration yet.</p>
           </div>
 
           {/* Password Fields */}

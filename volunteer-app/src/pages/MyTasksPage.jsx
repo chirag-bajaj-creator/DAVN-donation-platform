@@ -2,7 +2,35 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import volunteerService from '../services/volunteerService';
+import volunteerService, { getVolunteerSocket } from '../services/volunteerService';
+
+function formatLocation(address) {
+  if (!address) return 'N/A';
+  if (typeof address === 'string') return address;
+
+  return [address.street, address.city, address.state, address.zipCode]
+    .filter(Boolean)
+    .join(', ') || 'N/A';
+}
+
+function normalizeTask(task) {
+  const id = task._id || task.id;
+  const rawStatus = task.uiStatus || task.status || 'pending';
+  const needyType = task.needyType || task.type || 'individual';
+
+  return {
+    id,
+    key: id ? `${needyType}-${id}` : null,
+    title: task.title || task.name || task.org_name || 'Untitled Case',
+    description: task.description || 'No description available',
+    status: rawStatus === 'verified' ? 'completed' : rawStatus,
+    priority: task.priority || task.urgency || 'medium',
+    location: task.location || formatLocation(task.address),
+    createdAt: task.createdAt || null,
+    deadline: task.deadline || task.updatedAt || task.createdAt || null,
+    needyType,
+  };
+}
 
 export default function MyTasksPage() {
   const navigate = useNavigate();
@@ -20,7 +48,8 @@ export default function MyTasksPage() {
       try {
         setLoading(true);
         const response = await volunteerService.getAssignedCases();
-        setTasks(response.data?.data || []);
+        const cases = Array.isArray(response.data?.data) ? response.data.data : [];
+        setTasks(cases.map(normalizeTask).filter(task => task.id && task.key));
       } catch (error) {
         console.error('Failed to fetch tasks:', error);
         toast.error('Failed to load tasks');
@@ -31,23 +60,53 @@ export default function MyTasksPage() {
     };
 
     fetchTasks();
+
+    const socket = getVolunteerSocket();
+
+    if (socket) {
+      const handleRealtimeRefresh = () => {
+        fetchTasks();
+      };
+
+      socket.on('volunteer:assignment-created', handleRealtimeRefresh);
+      socket.on('volunteer:case-updated', handleRealtimeRefresh);
+      socket.on('volunteer:report-submitted', handleRealtimeRefresh);
+
+      return () => {
+        socket.off('volunteer:assignment-created', handleRealtimeRefresh);
+        socket.off('volunteer:case-updated', handleRealtimeRefresh);
+        socket.off('volunteer:report-submitted', handleRealtimeRefresh);
+      };
+    }
   }, [isAuthenticated, navigate]);
 
   const handleAccept = async (caseId) => {
+    if (!caseId) {
+      toast.error('Task id is missing');
+      return;
+    }
+
     try {
       await volunteerService.acceptCase(caseId);
       toast.success('Task accepted successfully');
-      setTasks(tasks.map(t => t.id === caseId ? { ...t, status: 'accepted' } : t));
+      setTasks(currentTasks =>
+        currentTasks.map(task => (task.id === caseId ? { ...task, status: 'accepted' } : task))
+      );
     } catch (error) {
       toast.error('Failed to accept task');
     }
   };
 
   const handleReject = async (caseId) => {
+    if (!caseId) {
+      toast.error('Task id is missing');
+      return;
+    }
+
     try {
       await volunteerService.rejectCase(caseId);
       toast.success('Task rejected');
-      setTasks(tasks.filter(t => t.id !== caseId));
+      setTasks(currentTasks => currentTasks.filter(task => task.id !== caseId));
     } catch (error) {
       toast.error('Failed to reject task');
     }
@@ -103,7 +162,7 @@ export default function MyTasksPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {tasks.map((task) => (
-              <div key={task.id} style={{ backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', padding: '24px', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.5) 100%)', border: '2px solid transparent', borderImage: 'linear-gradient(135deg, #0284c7, #a855f7) 1', transition: 'all 0.3s', position: 'relative', overflow: 'hidden' }}>
+              <div key={task.key} style={{ backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', padding: '24px', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.5) 100%)', border: '2px solid transparent', borderImage: 'linear-gradient(135deg, #0284c7, #a855f7) 1', transition: 'all 0.3s', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '150px', height: '150px', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(14, 165, 233, 0.08))', borderRadius: '50%', pointerEvents: 'none' }}></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
                   <div>
@@ -126,11 +185,15 @@ export default function MyTasksPage() {
                   </div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Assigned Date</p>
-                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>{new Date(task.createdAt).toLocaleDateString()}</p>
+                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>
+                      {task.createdAt ? new Date(task.createdAt).toLocaleDateString() : 'N/A'}
+                    </p>
                   </div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Deadline</p>
-                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>{new Date(task.deadline).toLocaleDateString()}</p>
+                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>
+                      {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
+                    </p>
                   </div>
                 </div>
 
@@ -157,7 +220,7 @@ export default function MyTasksPage() {
                   )}
                   {task.status === 'accepted' && (
                     <button
-                      onClick={() => navigate(`/submit-report?taskId=${task.id}`)}
+                      onClick={() => navigate(`/submit-report?taskId=${task.id}&needyType=${task.needyType}`)}
                       style={{ flex: 1, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', fontWeight: '600', padding: '12px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }}
                       onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.3)')}
                       onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)')}

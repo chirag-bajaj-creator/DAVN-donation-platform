@@ -3,7 +3,23 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
-import volunteerService from '../services/volunteerService';
+import volunteerService, { getVolunteerSocket } from '../services/volunteerService';
+
+function normalizeTaskStatus(task) {
+  const rawStatus = task.uiStatus || task.status || 'pending';
+  return rawStatus === 'verified' ? 'completed' : rawStatus;
+}
+
+function buildStats(cases) {
+  const normalizedCases = Array.isArray(cases) ? cases : [];
+  const statuses = normalizedCases.map(normalizeTaskStatus);
+
+  return {
+    assignedCases: normalizedCases.length,
+    completedCases: statuses.filter((status) => status === 'completed').length,
+    pendingReports: statuses.filter((status) => status === 'accepted').length,
+  };
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -25,12 +41,7 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         const response = await volunteerService.getAssignedCases();
-        // Mock stats calculation - adjust based on actual API response
-        setStats({
-          assignedCases: response.data?.data?.length || 0,
-          completedCases: 0,
-          pendingReports: 0,
-        });
+        setStats(buildStats(response.data?.data));
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
         // Don't toast error on first load, just use defaults
@@ -40,6 +51,24 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
+
+    const socket = getVolunteerSocket();
+
+    if (socket) {
+      const handleRealtimeRefresh = () => {
+        fetchDashboardData();
+      };
+
+      socket.on('volunteer:assignment-created', handleRealtimeRefresh);
+      socket.on('volunteer:case-updated', handleRealtimeRefresh);
+      socket.on('volunteer:report-submitted', handleRealtimeRefresh);
+
+      return () => {
+        socket.off('volunteer:assignment-created', handleRealtimeRefresh);
+        socket.off('volunteer:case-updated', handleRealtimeRefresh);
+        socket.off('volunteer:report-submitted', handleRealtimeRefresh);
+      };
+    }
   }, [isAuthenticated, navigate]);
 
   const handleLogout = async () => {
@@ -182,4 +211,3 @@ export default function DashboardPage() {
       </Layout>
     );
   }
-

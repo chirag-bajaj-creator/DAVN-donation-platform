@@ -44,12 +44,12 @@ export default function LoginForm() {
       const errorData = error.response?.data;
       let message = 'Login failed';
 
-      if (errorData?.message) {
+      if (error.message) {
+        message = error.message;
+      } else if (errorData?.message) {
         message = errorData.message;
       } else if (errorData?.error) {
         message = errorData.error;
-      } else if (error.message) {
-        message = error.message;
       }
 
       console.log('Full error details:', {

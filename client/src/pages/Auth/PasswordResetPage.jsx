@@ -89,7 +89,7 @@ export default function PasswordResetPage() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-2xl font-bold text-primary-600">Hravinder</div>
+          <div className="text-2xl font-bold text-primary-600">Community Platform</div>
           <p className="text-gray-600 text-sm">Donation Platform</p>
         </div>
       </header>
@@ -296,7 +296,7 @@ export default function PasswordResetPage() {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-gray-600">
-          <span>© 2026 Hravinder. All rights reserved.</span>
+          <span>© 2026 Community Platform. All rights reserved.</span>
         </div>
       </footer>
     </div>

@@ -3,12 +3,21 @@ import authService from '../services/authService';
 
 export const AuthContext = createContext();
 
+const CLIENT_ROLE = 'user';
+
+function normalizeRole(role) {
+  return (role || '').toLowerCase();
+}
+
+function clearClientSession() {
+  authService.logout();
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Initialize auth state from localStorage on mount
   useEffect(() => {
     const initializeAuth = () => {
       try {
@@ -16,23 +25,27 @@ export const AuthProvider = ({ children }) => {
         const storedUser = localStorage.getItem('user');
 
         if (token && storedUser) {
-          // Both token and user exist - restore auth state
           const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
+
+          if (normalizeRole(userData.role) === CLIENT_ROLE) {
+            setUser(userData);
+            setIsAuthenticated(true);
+          } else {
+            clearClientSession();
+            setUser(null);
+            setIsAuthenticated(false);
+          }
         } else if (token || storedUser) {
-          // One exists but not the other - clear both (corrupted state)
-          authService.logout();
+          clearClientSession();
           setUser(null);
           setIsAuthenticated(false);
         } else {
-          // Neither exists - user not logged in
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        authService.logout();
+        clearClientSession();
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -50,30 +63,31 @@ export const AuthProvider = ({ children }) => {
       const { accessToken, refreshToken } = response.data.tokens;
       const { user_id, email, role } = response.data.data;
 
-      // Prepare user data
+      if (normalizeRole(role) !== CLIENT_ROLE) {
+        clearClientSession();
+        const roleError = new Error('Client account required to sign in to this app.');
+        roleError.code = 'ROLE_MISMATCH';
+        throw roleError;
+      }
+
       const userData = {
         id: user_id,
-        email: email,
-        role: role,
+        email,
+        role,
       };
 
-      // Store tokens FIRST
       authService.setAuthToken(accessToken);
       if (refreshToken) {
         localStorage.setItem('refreshToken', refreshToken);
       }
 
-      // Persist user to localStorage immediately
       localStorage.setItem('user', JSON.stringify(userData));
-
-      // Update state
       setUser(userData);
       setIsAuthenticated(true);
 
       return userData;
     } catch (error) {
-      // Clear any partial state on error
-      authService.logout();
+      clearClientSession();
       setUser(null);
       setIsAuthenticated(false);
       throw error;
@@ -89,30 +103,31 @@ export const AuthProvider = ({ children }) => {
       const { accessToken, refreshToken } = response.data.tokens;
       const { user_id, email, role } = response.data.data;
 
-      // Prepare user data
+      if (normalizeRole(role) !== CLIENT_ROLE) {
+        clearClientSession();
+        const roleError = new Error('Client account required to access this app.');
+        roleError.code = 'ROLE_MISMATCH';
+        throw roleError;
+      }
+
       const user = {
         id: user_id,
-        email: email,
-        role: role,
+        email,
+        role,
       };
 
-      // Store tokens FIRST
       authService.setAuthToken(accessToken);
       if (refreshToken) {
         localStorage.setItem('refreshToken', refreshToken);
       }
 
-      // Persist user to localStorage immediately
       localStorage.setItem('user', JSON.stringify(user));
-
-      // Update state
       setUser(user);
       setIsAuthenticated(true);
 
       return user;
     } catch (error) {
-      // Clear any partial state on error
-      authService.logout();
+      clearClientSession();
       setUser(null);
       setIsAuthenticated(false);
       throw error;
@@ -125,13 +140,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await authService.logout();
-      // Clear localStorage explicitly
       localStorage.removeItem('user');
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
       console.error('Logout failed:', error);
-      // Force clear even if logout API fails
       localStorage.removeItem('user');
       setUser(null);
       setIsAuthenticated(false);

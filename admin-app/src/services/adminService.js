@@ -1,8 +1,45 @@
+import { io } from 'socket.io-client';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const SOCKET_URL = API_BASE.replace(/\/api\/?$/, '');
+let adminSocket;
 
 const getAuthHeader = () => ({
   'Authorization': `Bearer ${localStorage.getItem('authToken')}`
 });
+
+export const getAdminSocket = () => {
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    return null;
+  }
+
+  if (!adminSocket) {
+    adminSocket = io(SOCKET_URL, {
+      auth: {
+        token: `Bearer ${token}`
+      },
+      transports: ['websocket', 'polling']
+    });
+  } else if (!adminSocket.connected) {
+    adminSocket.auth = {
+      token: `Bearer ${token}`
+    };
+    adminSocket.connect();
+  }
+
+  return adminSocket;
+};
+
+export const disconnectAdminSocket = () => {
+  if (!adminSocket) {
+    return;
+  }
+
+  adminSocket.disconnect();
+  adminSocket = null;
+};
 
 export const adminService = {
   getStats: async () => {
@@ -80,7 +117,34 @@ export const adminService = {
       headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ volunteerId })
     });
-    if (!res.ok) throw new Error('Failed to assign volunteer');
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || 'Failed to assign volunteer');
+    return data;
+  },
+
+  getVerificationReports: async (limit = 20, skip = 0) => {
+    const res = await fetch(`${API_BASE}/admin/verification-reports?limit=${limit}&skip=${skip}`, {
+      headers: getAuthHeader()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || 'Failed to fetch verification reports');
+    return data;
+  },
+
+  downloadVerificationReportPdf: async (reportId) => {
+    const res = await fetch(`${API_BASE}/admin/verification-reports/${reportId}/pdf`, {
+      headers: getAuthHeader()
+    });
+
+    if (!res.ok) {
+      let errorMessage = 'Failed to download verification report PDF';
+      try {
+        const data = await res.json();
+        errorMessage = data.error || data.message || errorMessage;
+      } catch {}
+      throw new Error(errorMessage);
+    }
+
+    return res.blob();
   }
 };

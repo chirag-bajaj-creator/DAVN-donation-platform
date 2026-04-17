@@ -30,7 +30,7 @@ export default function HomePage() {
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '24px', fontWeight: 'bold', backgroundImage: 'linear-gradient(135deg, #0ea5e9, #a855f7)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Hravinder
+            Community Platform
           </div>
           <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}>
             Sign In
@@ -42,7 +42,7 @@ export default function HomePage() {
       <section style={{ paddingTop: '128px', paddingBottom: '80px', background: 'linear-gradient(to bottom, #0284c7, #0ea5e9, #a855f7)', color: '#fff' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
           <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px', lineHeight: '1.2' }}>Making Charitable Giving Simple and Transparent</h1>
-          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>Hravinder connects generous donors with verified needy individuals and organizations, making every contribution count.</p>
+          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>A simple platform connecting generous donors with verified needy individuals and organizations, making every contribution count.</p>
           <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#fff', color: '#0284c7', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
             Sign In / Register
           </button>
@@ -88,7 +88,7 @@ export default function HomePage() {
       <footer style={{ backgroundColor: '#111827', color: '#9ca3af', padding: '48px 16px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ borderTop: '1px solid #374151', paddingTop: '32px', textAlign: 'center', fontSize: '14px' }}>
-            <p>&copy; 2024 Hravinder. All rights reserved.</p>
+            <p>&copy; 2024 Community Platform. All rights reserved.</p>
           </div>
         </div>
       </footer>
