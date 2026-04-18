@@ -1,4 +1,4 @@
-import apiClient, { SOCKET_URL } from './api';
+import apiClient, { SOCKET_PATH, SOCKET_TRANSPORTS, SOCKET_URL } from './api';
 import { io } from 'socket.io-client';
 
 let volunteerSocket;
@@ -12,10 +12,12 @@ export const getVolunteerSocket = () => {
 
   if (!volunteerSocket) {
     volunteerSocket = io(SOCKET_URL, {
+      path: SOCKET_PATH,
       auth: {
         token: `Bearer ${token}`
       },
-      transports: ['websocket', 'polling']
+      transports: SOCKET_TRANSPORTS,
+      upgrade: false
     });
   } else if (!volunteerSocket.connected) {
     volunteerSocket.auth = {

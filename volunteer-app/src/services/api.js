@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 export const API_BASE = import.meta.env.VITE_API_URL || '/api';
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
+export const SOCKET_URL = window.location.origin;
+export const SOCKET_PATH = '/socket.io';
+export const SOCKET_TRANSPORTS = ['polling'];
 
 // Create axios instance with default config
 const apiClient = axios.create({

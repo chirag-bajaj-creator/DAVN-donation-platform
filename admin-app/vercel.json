@@ -7,6 +7,10 @@
     {
       "source": "/health",
       "destination": "http://135.119.93.20/dawn/health"
+    },
+    {
+      "source": "/socket.io/(.*)",
+      "destination": "http://135.119.93.20/socket.io/$1"
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-import { API_BASE, SOCKET_URL } from './api';
+import { API_BASE, SOCKET_PATH, SOCKET_TRANSPORTS, SOCKET_URL } from './api';
 
 let adminSocket;
 
@@ -16,10 +16,12 @@ export const getAdminSocket = () => {
 
   if (!adminSocket) {
     adminSocket = io(SOCKET_URL, {
+      path: SOCKET_PATH,
       auth: {
         token: `Bearer ${token}`
       },
-      transports: ['websocket', 'polling']
+      transports: SOCKET_TRANSPORTS,
+      upgrade: false
     });
   } else if (!adminSocket.connected) {
     adminSocket.auth = {
