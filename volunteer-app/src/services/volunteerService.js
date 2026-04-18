@@ -1,7 +1,6 @@
-import apiClient from './api';
+import apiClient, { SOCKET_URL } from './api';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 let volunteerSocket;
 
 export const getVolunteerSocket = () => {

@@ -1,9 +1,12 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/(.*)",
+      "destination": "http://135.119.93.20/dawn/api/$1"
+    },
+    {
+      "source": "/health",
+      "destination": "http://135.119.93.20/dawn/health"
     }
   ]
 }

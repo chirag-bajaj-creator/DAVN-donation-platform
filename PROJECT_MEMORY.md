@@ -8,6 +8,9 @@
   2. propose exact files to change and why,
   3. wait for explicit approval.
 - Editing is allowed only when the user explicitly authorizes implementation.
+- Exception: `PROJECT_MEMORY.md` may be updated without asking first.
+- For `PROJECT_MEMORY.md`, save meaningful user prompts/instructions and session milestones proactively.
+- Prefer `cmd`-style command invocations when practical if that reduces tool overhead/tokens in this workspace.
 - Keep answers direct and practical.
 
 ## Environment
@@ -37,6 +40,12 @@
 
 ## Recent Changes
 
+- Updated all three Vite frontends to use Vercel-relative API access:
+  - `admin-app`, `client`, and `volunteer-app` now use `VITE_API_URL=/api`
+  - each frontend `vercel.json` now rewrites `/api/*` to `http://135.119.93.20/dawn/api/*`
+  - each frontend `vercel.json` now rewrites `/health` to `http://135.119.93.20/dawn/health`
+  - shared axios/fetch API bases now default to `/api` instead of `http://localhost:5000/api`
+  - admin/volunteer socket URLs now derive from shared config and default to same-origin unless `VITE_SOCKET_URL` is set
 - Fixed `MyTasksPage` task normalization so task ids come from `_id` and list keys are more stable.
 - Added backend case accept/reject endpoints for volunteer case actions.
 - Fixed report submission enum mismatch for `needy_type`.
@@ -75,9 +84,13 @@
   - `client/vercel.json`
   - `admin-app/vercel.json`
   - `volunteer-app/vercel.json`
+- Reached deployment stage, but memory had not been updated to reflect that milestone.
+- Cron job setup was completed/handled in a prior session, but the exact schedule, provider, and task details still need to be recorded here if required later.
 
 ## Known Issues / Pending Work
 
+- The new Vercel rewrite files now match the requested API proxy config exactly, but they no longer include the previous SPA catch-all rewrite. If direct client-side deep links fail on Vercel, add an SPA fallback after the API/health rewrites.
+- Admin and volunteer Socket.IO clients no longer point at the raw backend host. If live sockets are required through Vercel, verify whether same-origin socket proxying is configured or set `VITE_SOCKET_URL` appropriately.
 - Dependency note:
   - `volunteer-app` has an existing Vite / `@vitejs/plugin-react` peer dependency mismatch.
   - `--legacy-peer-deps` may be required for npm installs until dependency versions are aligned.
@@ -101,3 +114,4 @@
 ## Maintenance Rule
 
 - Update this file after meaningful architectural, workflow, or user-preference changes.
+- This file is the one exception to review-first approval: keep it current without asking first.
