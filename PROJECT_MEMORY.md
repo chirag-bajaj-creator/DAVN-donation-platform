@@ -46,6 +46,10 @@
   - each frontend `vercel.json` now rewrites `/health` to `http://135.119.93.20/dawn/health`
   - shared axios/fetch API bases now default to `/api` instead of `http://localhost:5000/api`
   - admin/volunteer socket URLs now derive from shared config and default to same-origin unless `VITE_SOCKET_URL` is set
+- Updated backend CORS allowlist in `backend/server.js` to include these Vercel origins:
+  - `https://davn-donation-platform.vercel.app`
+  - `https://davn-donation-platform-hadr.vercel.app`
+  - `https://davn-donation-platform-ac79.vercel.app`
 - Fixed `MyTasksPage` task normalization so task ids come from `_id` and list keys are more stable.
 - Added backend case accept/reject endpoints for volunteer case actions.
 - Fixed report submission enum mismatch for `needy_type`.

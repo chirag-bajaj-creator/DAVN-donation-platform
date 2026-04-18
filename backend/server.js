@@ -26,7 +26,14 @@ const { setSocketServer } = require('./services/socketService');
 
 const app = express();
 const server = http.createServer(app);
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'https://davn-donation-platform.vercel.app',
+  'https://davn-donation-platform-hadr.vercel.app',
+  'https://davn-donation-platform-ac79.vercel.app'
+].map((origin) => origin.replace(/\/$/, ''));
 
 // Security middleware
 app.use(helmet());
