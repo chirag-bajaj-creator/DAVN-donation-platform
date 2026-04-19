@@ -40,6 +40,12 @@
 
 ## Recent Changes
 
+- Added GitHub Actions backend auto-deploy workflow in `.github/workflows/deploy.yml`:
+  - triggers on successful completion of `CI Pipeline` for `master`
+  - deploys to Azure VM over SSH using `appleboy/ssh-action`
+  - runs in `/home/azureuser/DAVN-donation-platform`
+  - restarts backend with `sudo docker-compose down` and `sudo docker-compose up -d --build`
+  - verifies deployment with `curl -f http://127.0.0.1:5001/health`
 - Updated GitHub Actions backend test step in `.github/workflows/ci.yml`:
   - replaced `npm run test --if-present` with `npm test -- --passWithNoTests`
   - CI now passes when Jest finds zero test files, while still running tests once they exist
