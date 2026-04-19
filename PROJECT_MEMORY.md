@@ -40,6 +40,9 @@
 
 ## Recent Changes
 
+- Updated GitHub Actions backend test step in `.github/workflows/ci.yml`:
+  - replaced `npm run test --if-present` with `npm test -- --passWithNoTests`
+  - CI now passes when Jest finds zero test files, while still running tests once they exist
 - Updated all three Vite frontends to use Vercel-relative API access:
   - `admin-app`, `client`, and `volunteer-app` now use `VITE_API_URL=/api`
   - each frontend `vercel.json` now rewrites `/api/*` to `http://135.119.93.20/dawn/api/*`
