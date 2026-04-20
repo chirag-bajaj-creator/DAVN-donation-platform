@@ -11,113 +11,82 @@ export default function LoginModal({ isOpen, onClose }) {
     } else {
       document.body.style.overflow = 'auto';
     }
+
     return () => {
       document.body.style.overflow = 'auto';
     };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsRegistering(false);
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 50,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '80px 40px'
-      }}
+      className="auth-modal-overlay"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: '20px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
-          width: '100%',
-          maxWidth: '360px',
-          overflow: 'hidden',
-          animation: 'slideIn 0.25s ease-out'
-        }}
-        onClick={(e) => e.stopPropagation()}
+        className="auth-modal-card"
+        onClick={(event) => event.stopPropagation()}
       >
-        {/* Header with gradient */}
-        <div style={{
-          background: 'linear-gradient(to bottom, #0284c7 0%, #0ea5e9 50%, #a855f7 100%)',
-          color: '#fff',
-          padding: '24px',
-          textAlign: 'center',
-          position: 'relative'
-        }}>
+        <div className="auth-modal-header">
+          <div className="auth-modal-glow" />
+
           <button
+            type="button"
             onClick={onClose}
-            style={{
-              position: 'absolute',
-              right: '12px',
-              top: '8px',
-              color: '#fff',
-              fontSize: '28px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              opacity: 0.8,
-              transition: 'opacity 0.2s'
-            }}
-            onMouseEnter={(e) => e.target.style.opacity = '1'}
-            onMouseLeave={(e) => e.target.style.opacity = '0.8'}
+            aria-label="Close authentication modal"
+            className="auth-modal-close"
           >
-            ×
+            &times;
           </button>
-          <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, marginBottom: '4px' }}>
-            {isRegistering ? 'Create Account' : 'Welcome Back'}
-          </h2>
-          <p style={{ fontSize: '12px', opacity: 0.9, margin: 0 }}>
-            {isRegistering ? 'Join our community' : 'Sign in to your account'}
-          </p>
+
+          <div className="auth-modal-header-content">
+            <div className="auth-modal-badge">
+              Admin Portal
+            </div>
+            <h2 className="auth-modal-title">
+              {isRegistering ? 'Create your admin account' : 'Sign in to the admin panel'}
+            </h2>
+            <p className="auth-modal-subtitle">
+              {isRegistering
+                ? 'Register with your details and admin secret to access the control panel.'
+                : 'Use your admin credentials to manage users, volunteers, donations, and reports.'}
+            </p>
+          </div>
         </div>
 
-        {/* Form Content */}
-        <div style={{ padding: '24px' }}>
+        <div className="auth-modal-body">
           {isRegistering ? (
             <>
               <RegisterForm onSuccess={onClose} />
-              <p style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280', marginTop: '12px' }}>
+              <p className="auth-modal-switch-text">
                 Already have an account?{' '}
                 <button
+                  type="button"
                   onClick={() => setIsRegistering(false)}
-                  style={{
-                    color: '#0284c7',
-                    fontWeight: '600',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                    fontSize: 'inherit'
-                  }}
+                  className="auth-modal-switch-button"
                 >
-                  Login here
+                  Sign in here
                 </button>
               </p>
             </>
           ) : (
             <>
               <LoginForm onSuccess={onClose} />
-              <p style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280', marginTop: '12px' }}>
-                Don't have an account?{' '}
+              <p className="auth-modal-switch-text">
+                Don&apos;t have an account?{' '}
                 <button
+                  type="button"
                   onClick={() => setIsRegistering(true)}
-                  style={{
-                    color: '#0284c7',
-                    fontWeight: '600',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                    fontSize: 'inherit'
-                  }}
+                  className="auth-modal-switch-button"
                 >
                   Register here
                 </button>
@@ -126,13 +95,6 @@ export default function LoginModal({ isOpen, onClose }) {
           )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(-16px) scale(0.97); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
     </div>
   );
 }

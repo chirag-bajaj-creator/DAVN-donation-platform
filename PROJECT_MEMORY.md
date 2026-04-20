@@ -40,6 +40,18 @@
 
 ## Recent Changes
 
+- Fixed admin auth modal visibility in `admin-app`:
+  - rewrote `admin-app/src/components/Common/LoginModal.jsx` to use dedicated app CSS classes for popup rendering
+  - added explicit auth modal shell/form styling in `admin-app/src/styles/admin.css`
+  - reduced shared auth popup width further with a fixed narrower card width and viewport clamping
+  - added internal scrolling to the auth modal body so long signup content stays inside the popup
+  - fixed auth modal close/toggle buttons to use explicit `type="button"` and layered the close button above header effects
+  - avoids relying on utility-class compilation for the open/visible state of the login popup
+- Restyled `admin-app` auth popup UI:
+  - widened `admin-app/src/components/Common/LoginModal.jsx`
+  - added modal height/scroll handling for long signup content
+  - refreshed login/register form field styling in `admin-app/src/components/Auth/LoginForm.jsx` and `admin-app/src/components/Auth/RegisterForm.jsx`
+  - changed address fields to stack on narrow widths and fixed broken auth text glyphs/placeholders
 - Added GitHub Actions backend auto-deploy workflow in `.github/workflows/deploy.yml`:
   - triggers on successful completion of `CI Pipeline` for `master`
   - deploys to Azure VM over SSH using `appleboy/ssh-action`
@@ -110,6 +122,7 @@
 - Local build verification is partially blocked in this environment by Vite sandbox `spawn EPERM` during config resolution.
 - `code-review-graph` is configured locally, but its MCP tools were not exposed through the available tool interface in this session.
 - Role-lock fix was verified by code inspection, but not full browser runtime testing in this sandbox.
+- Admin auth modal restyle was applied, but local `npm run build` verification is still blocked here by the same Vite `spawn EPERM` config-resolution issue.
 
 ## Next Recommended Task
 

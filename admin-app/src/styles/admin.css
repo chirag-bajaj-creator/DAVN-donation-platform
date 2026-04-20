@@ -349,6 +349,218 @@
   font-size: 14px;
 }
 
+/* Auth Modal */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: rgba(15, 23, 42, 0.68);
+}
+
+.auth-modal-card {
+  width: 540px;
+  max-width: calc(100vw - 32px);
+  max-height: 92vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+  animation: authModalSlideIn 0.24s ease-out;
+}
+
+.auth-modal-header {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 32px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 52%, #6366f1 100%);
+}
+
+.auth-modal-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.35), transparent 35%);
+}
+
+.auth-modal-header-content {
+  position: relative;
+  z-index: 1;
+  padding-right: 52px;
+}
+
+.auth-modal-badge {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.auth-modal-title {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.auth-modal-subtitle {
+  margin: 10px 0 0;
+  max-width: 100%;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.auth-modal-body {
+  overflow-y: auto;
+  max-height: calc(92vh - 220px);
+  padding: 28px 32px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(2, 132, 199, 0.55) rgba(226, 232, 240, 0.9);
+}
+
+.auth-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.auth-modal-body::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.9);
+  border-radius: 999px;
+}
+
+.auth-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(2, 132, 199, 0.55);
+  border-radius: 999px;
+}
+
+.auth-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(3, 105, 161, 0.72);
+}
+
+.auth-modal-body form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-modal-body label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.auth-modal-body input,
+.auth-modal-body textarea,
+.auth-modal-body select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.auth-modal-body input:focus,
+.auth-modal-body textarea:focus,
+.auth-modal-body select:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  background: #ffffff;
+}
+
+.auth-modal-body button[type="submit"] {
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 16px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-modal-body button[type="submit"]:hover {
+  background: #0369a1;
+}
+
+.auth-modal-body button[type="submit"]:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.auth-modal-body p {
+  margin: 0;
+}
+
+.auth-modal-switch-text {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.auth-modal-switch-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #0369a1;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-modal-switch-button:hover {
+  color: #075985;
+}
+
+@keyframes authModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Error Messages */
 .error-message {
   background: #fee2e2;
@@ -390,6 +602,15 @@
 
   .modal {
     width: 95%;
+  }
+
+  .auth-modal-card {
+    border-radius: 22px;
+  }
+
+  .auth-modal-header,
+  .auth-modal-body {
+    padding: 22px 18px;
   }
 
   .tabs {

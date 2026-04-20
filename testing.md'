@@ -1,0 +1,41 @@
+1. Unit Testing (smallest piece)
+Test one function / one component
+Example:
+add(2,3) → 5
+
+👉 Fast, isolated, but many tests needed
+
+2. Integration Testing
+Check if multiple parts work together
+Example:
+API + Database + Service layer
+
+👉 Finds connection issues
+
+3. System Testing
+Test entire application
+Example:
+Login → Add to cart → Checkout
+
+👉 Simulates real usage
+
+4. End-to-End (E2E) Testing
+Full user journey in real environment
+Tools: Cypress, Playwright
+
+👉 Slow but closest to reality
+
+5. Regression Testing
+Ensure new changes didn’t break old features
+
+👉 Happens after every update
+
+6. Performance Testing
+Check speed, load, scalability
+
+👉 “Can 10,000 users use it at once?”
+
+7. Security Testing
+Find vulnerabilities
+
+👉 Prevent hacking
