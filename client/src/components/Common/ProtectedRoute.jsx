@@ -15,31 +15,20 @@ import Loading from './Loading';
 export default function ProtectedRoute({ element, allowedRoles = null }) {
   const { user, loading, isAuthenticated } = useAuth();
 
-  // Fallback check: verify token exists (in case of state sync issues)
-  const hasToken = localStorage.getItem('authToken');
-  const storedUser = localStorage.getItem('user');
-
   // Show loading state while checking authentication
   if (loading) {
     return <Loading />;
   }
 
   // Redirect to login if not authenticated
-  // Check both context AND localStorage to handle race conditions
-  const isActuallyAuthenticated = isAuthenticated || (hasToken && storedUser);
-
-  if (!isActuallyAuthenticated) {
-    // Clear any orphaned data
-    if (!hasToken && storedUser) {
-      localStorage.removeItem('user');
-    }
-    return <Navigate to="/" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   // Check role-based access if allowedRoles is specified
   if (allowedRoles) {
     const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    const userToCheck = user || (storedUser ? JSON.parse(storedUser) : null);
+    const userToCheck = user;
 
     if (userToCheck && !rolesArray.includes(userToCheck.role)) {
       // Redirect to 403 Forbidden page or dashboard

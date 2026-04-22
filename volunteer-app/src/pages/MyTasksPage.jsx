@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import Layout from '../components/Layout';
+import { AuthContext } from '../context/AuthContext';
 import volunteerService, { getVolunteerSocket } from '../services/volunteerService';
 
 function formatLocation(address) {
@@ -32,6 +33,12 @@ function normalizeTask(task) {
   };
 }
 
+function getStatusClass(status) {
+  if (status === 'completed') return 'is-completed';
+  if (status === 'accepted') return 'is-accepted';
+  return 'is-pending';
+}
+
 export default function MyTasksPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
@@ -40,7 +47,7 @@ export default function MyTasksPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate('/');
       return;
     }
 
@@ -114,126 +121,94 @@ export default function MyTasksPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-full mb-4 animate-spin">
-            <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </div>
-          <p className="text-gray-600">Loading tasks...</p>
+      <div className="volunteer-app-shell volunteer-loading-shell">
+        <div className="volunteer-loading-card">
+          <div className="volunteer-spinner" />
+          <p>Loading tasks...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #f0f9ff 0%, #fce7f3 100%)' }}>
-      <header style={{ background: 'linear-gradient(135deg, #0284c7 0%, #a855f7 50%, #ec4899 100%)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{ color: '#fff', fontWeight: '600', marginBottom: '12px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s', padding: 0 }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
-            ← Back
+    <Layout>
+      <div className="volunteer-page-shell">
+        <section className="volunteer-page-hero">
+          <button type="button" className="volunteer-back-link" onClick={() => navigate('/dashboard')}>
+            Back to dashboard
           </button>
-          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#fff', margin: '0 0 8px 0' }}>My Assigned Tasks</h1>
-          <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}>Cases assigned to you that need verification</p>
-        </div>
-      </header>
+          <span className="volunteer-page-kicker">Assigned cases</span>
+          <h1 className="volunteer-page-title">My Tasks</h1>
+          <p className="volunteer-page-copy">Cases assigned to you that need acceptance, verification, or report submission.</p>
+        </section>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {tasks.length === 0 ? (
-          <div style={{ backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)', padding: '48px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.1), rgba(168, 85, 247, 0.1))', borderRadius: '50%', pointerEvents: 'none' }}></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', marginBottom: '12px', position: 'relative', zIndex: 1 }}>No tasks assigned yet</h3>
-            <p style={{ color: '#6b7280', marginBottom: '24px', position: 'relative', zIndex: 1 }}>Check back later for new volunteer opportunities.</p>
-            <button
-              onClick={() => navigate('/dashboard')}
-              style={{ background: 'linear-gradient(135deg, #0284c7 0%, #a855f7 100%)', color: '#fff', fontWeight: '600', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 8px 20px rgba(2, 132, 199, 0.4)')}
-              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(2, 132, 199, 0.3)')}
-            >
+          <section className="volunteer-empty-card">
+            <h2 className="volunteer-section-title">No tasks assigned yet</h2>
+            <p className="volunteer-empty-copy">Check back later for new volunteer opportunities.</p>
+            <button type="button" className="volunteer-task-action" onClick={() => navigate('/dashboard')}>
               Return to Dashboard
             </button>
-          </div>
+          </section>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <section className="volunteer-task-list">
             {tasks.map((task) => (
-              <div key={task.key} style={{ backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', padding: '24px', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.5) 100%)', border: '2px solid transparent', borderImage: 'linear-gradient(135deg, #0284c7, #a855f7) 1', transition: 'all 0.3s', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '150px', height: '150px', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(14, 165, 233, 0.08))', borderRadius: '50%', pointerEvents: 'none' }}></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
+              <article key={task.key} className="volunteer-task-card">
+                <div className="volunteer-task-top">
                   <div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0, marginBottom: '4px' }}>{task.title}</h3>
-                    <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>{task.description}</p>
+                    <h3 className="volunteer-task-title">{task.title}</h3>
+                    <p className="volunteer-task-description">{task.description}</p>
                   </div>
-                  <span style={{ paddingLeft: '12px', paddingRight: '12px', paddingTop: '4px', paddingBottom: '4px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', background: task.status === 'completed' ? 'linear-gradient(135deg, #10b981, #059669)' : task.status === 'accepted' ? 'linear-gradient(135deg, #0284c7, #0ea5e9)' : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', whiteSpace: 'nowrap' }}>
+                  <span className={`volunteer-task-badge ${getStatusClass(task.status)}`}>
                     {task.status}
                   </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px', position: 'relative', zIndex: 1 }}>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Priority</p>
-                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>{task.priority}</p>
+                <div className="volunteer-meta-grid">
+                  <div className="volunteer-meta-item">
+                    <span>Priority</span>
+                    <strong>{task.priority}</strong>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Location</p>
-                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>{task.location}</p>
+                  <div className="volunteer-meta-item">
+                    <span>Location</span>
+                    <strong>{task.location}</strong>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Assigned Date</p>
-                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>
-                      {task.createdAt ? new Date(task.createdAt).toLocaleDateString() : 'N/A'}
-                    </p>
+                  <div className="volunteer-meta-item">
+                    <span>Assigned</span>
+                    <strong>{task.createdAt ? new Date(task.createdAt).toLocaleDateString() : 'N/A'}</strong>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Deadline</p>
-                    <p style={{ fontWeight: '600', color: '#111827', margin: 0 }}>
-                      {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
-                    </p>
+                  <div className="volunteer-meta-item">
+                    <span>Deadline</span>
+                    <strong>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}</strong>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', position: 'relative', zIndex: 1 }}>
+                <div className="volunteer-task-actions">
                   {task.status !== 'completed' && task.status !== 'accepted' && (
                     <>
-                      <button
-                        onClick={() => handleAccept(task.id)}
-                        style={{ flex: 1, background: 'linear-gradient(135deg, #0284c7 0%, #a855f7 100%)', color: '#fff', fontWeight: '600', padding: '12px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.2)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(2, 132, 199, 0.3)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(2, 132, 199, 0.2)')}
-                      >
-                        ✓ Accept Task
+                      <button type="button" className="volunteer-task-action is-emerald" onClick={() => handleAccept(task.id)}>
+                        Accept Task
                       </button>
-                      <button
-                        onClick={() => handleReject(task.id)}
-                        style={{ flex: 1, background: 'linear-gradient(135deg, #ec4899 0%, #e11d48 100%)', color: '#fff', fontWeight: '600', padding: '12px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(236, 72, 153, 0.2)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(236, 72, 153, 0.3)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(236, 72, 153, 0.2)')}
-                      >
-                        ✕ Reject
+                      <button type="button" className="volunteer-task-action is-rose" onClick={() => handleReject(task.id)}>
+                        Reject
                       </button>
                     </>
                   )}
                   {task.status === 'accepted' && (
                     <button
+                      type="button"
+                      className="volunteer-task-action is-amber"
                       onClick={() => navigate(`/submit-report?taskId=${task.id}&needyType=${task.needyType}`)}
-                      style={{ flex: 1, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', fontWeight: '600', padding: '12px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.3)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)')}
                     >
-                      📄 Submit Report
+                      Submit Report
                     </button>
                   )}
                 </div>
-              </div>
+              </article>
             ))}
-          </div>
+          </section>
         )}
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }

@@ -21,32 +21,16 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
+    const clearStoredAuth = () => {
+      clearVolunteerSession();
+      localStorage.removeItem('user');
+    };
+
     const initializeAuth = () => {
       try {
-        const token = authService.getAuthToken();
-        const storedUser = localStorage.getItem('user');
-
-        if (token && storedUser) {
-          // Both token and user exist - restore auth state
-          const userData = JSON.parse(storedUser);
-          if (normalizeRole(userData.role) === VOLUNTEER_ROLE) {
-            setUser(userData);
-            setIsAuthenticated(true);
-          } else {
-            clearVolunteerSession();
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } else if (token || storedUser) {
-          // One exists but not the other - clear both (corrupted state)
-          clearVolunteerSession();
-          setUser(null);
-          setIsAuthenticated(false);
-        } else {
-          // Neither exists - user not logged in
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+        clearStoredAuth();
+        setUser(null);
+        setIsAuthenticated(false);
       } catch (error) {
         console.error('Auth initialization error:', error);
         clearVolunteerSession();
@@ -58,6 +42,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
+
+    window.addEventListener('beforeunload', clearStoredAuth);
+    return () => window.removeEventListener('beforeunload', clearStoredAuth);
   }, []);
 
   const login = useCallback(async (credentials, options = {}) => {

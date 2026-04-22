@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { AuthContext } from '../context/AuthContext';
 import volunteerService from '../services/volunteerService';
 
-export default function UnspecializedRegisterPage() {
+export default function UnspecializedRegisterPage({ embedded = false, onSuccess, onLogin }) {
   const navigate = useNavigate();
   const { register: registerUser, login } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
@@ -32,16 +31,15 @@ export default function UnspecializedRegisterPage() {
 
     try {
       setLoading(true);
+      const normalizedEmail = data.email.trim().toLowerCase();
 
-      // Step 1: Create user account FIRST (this also auto-logs in and stores token)
       await registerUser({
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email.trim().toLowerCase(),
+        name: `${data.firstName} ${data.lastName}`.trim(),
+        email: normalizedEmail,
         phone: data.phone,
         password: data.password,
       });
 
-      // Step 2: Now register as volunteer (auth token is set from step 1)
       await volunteerService.registerUnspecialized({
         firstName: data.firstName,
         lastName: data.lastName,
@@ -51,18 +49,19 @@ export default function UnspecializedRegisterPage() {
         availability: data.availability,
       });
 
-      await login({
-        email: data.email.trim().toLowerCase(),
-        password: data.password,
-      }, { allowedRoles: ['volunteer'] });
+      await login({ email: normalizedEmail, password: data.password }, { allowedRoles: ['volunteer'] });
 
       toast.success('Registration successful! Welcome to Volunteer Network!');
-      navigate('/dashboard');
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error('Registration error details:', error.response?.data);
       let errorMessage = 'Registration failed. Please try again.';
       if (error.response?.data?.details) {
-        errorMessage = error.response.data.details.map(d => d.message).join(', ');
+        errorMessage = error.response.data.details.map((detail) => detail.message).join(', ');
       } else if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       } else if (error.response?.data?.message) {
@@ -74,176 +73,110 @@ export default function UnspecializedRegisterPage() {
     }
   };
 
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      backdropFilter: 'blur(4px)',
-      zIndex: 50,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '80px 40px',
-      overflowY: 'auto'
-    }}>
-      <div style={{
-        backgroundColor: '#fff',
-        borderRadius: '20px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
-        width: '100%',
-        maxWidth: '380px',
-        overflow: 'hidden',
-        animation: 'slideIn 0.25s ease-out'
-      }}>
-        {/* Header */}
-        <div style={{
-          background: 'linear-gradient(to bottom, #0284c7 0%, #0ea5e9 50%, #a855f7 100%)',
-          color: '#fff',
-          padding: '24px',
-          textAlign: 'center'
-        }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, marginBottom: '4px' }}>General Volunteer</h2>
-          <p style={{ fontSize: '12px', opacity: 0.9, margin: 0 }}>Make a difference today</p>
+  const content = (
+    <>
+        <div className="volunteer-auth-header">
+          <h2>General Volunteer</h2>
+          <p>Join the field network for flexible verification work.</p>
         </div>
 
-        {/* Form */}
-        <div style={{ padding: '24px', maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
-
-        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Name Fields */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input
-                type="text"
-                placeholder="John"
-                {...register('firstName', { required: 'First name is required' })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>}
+        <div className="volunteer-auth-body">
+          <form onSubmit={handleSubmit(onSubmit)} className="volunteer-form-shell">
+            <div className="volunteer-form-grid">
+              <div>
+                <label className="volunteer-label">First Name</label>
+                <input className="volunteer-input" type="text" placeholder="John" {...register('firstName', { required: 'First name is required' })} />
+                {errors.firstName && <p className="volunteer-error">{errors.firstName.message}</p>}
+              </div>
+              <div>
+                <label className="volunteer-label">Last Name</label>
+                <input className="volunteer-input" type="text" placeholder="Doe" {...register('lastName', { required: 'Last name is required' })} />
+                {errors.lastName && <p className="volunteer-error">{errors.lastName.message}</p>}
+              </div>
+              <div>
+                <label className="volunteer-label">Email</label>
+                <input
+                  className="volunteer-input"
+                  type="email"
+                  placeholder="john@example.com"
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Invalid email address' },
+                  })}
+                />
+                {errors.email && <p className="volunteer-error">{errors.email.message}</p>}
+              </div>
+              <div>
+                <label className="volunteer-label">Phone</label>
+                <input className="volunteer-input" type="tel" placeholder="9876543210" {...register('phone', { required: 'Phone number is required' })} />
+                {errors.phone && <p className="volunteer-error">{errors.phone.message}</p>}
+              </div>
+              <div>
+                <label className="volunteer-label">Availability</label>
+                <select className="volunteer-select" {...register('availability', { required: 'Please select availability' })}>
+                  <option value="weekdays">Weekdays</option>
+                  <option value="weekends">Weekends</option>
+                  <option value="flexible">Flexible</option>
+                  <option value="evenings">Evenings</option>
+                </select>
+                {errors.availability && <p className="volunteer-error">{errors.availability.message}</p>}
+              </div>
+              <div>
+                <label className="volunteer-label">Password</label>
+                <input
+                  className="volunteer-input"
+                  type="password"
+                  placeholder="Enter a strong password"
+                  {...register('password', {
+                    required: 'Password is required',
+                    minLength: { value: 8, message: 'Password must be at least 8 characters' },
+                  })}
+                />
+                {errors.password && <p className="volunteer-error">{errors.password.message}</p>}
+              </div>
+              <div>
+                <label className="volunteer-label">Confirm Password</label>
+                <input
+                  className="volunteer-input"
+                  type="password"
+                  placeholder="Confirm your password"
+                  {...register('confirmPassword', {
+                    required: 'Please confirm your password',
+                    validate: (value) => value === password || 'Passwords do not match',
+                  })}
+                />
+                {errors.confirmPassword && <p className="volunteer-error">{errors.confirmPassword.message}</p>}
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input
-                type="text"
-                placeholder="Doe"
-                {...register('lastName', { required: 'Last name is required' })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>}
-            </div>
-          </div>
 
-          {/* Contact Fields */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              placeholder="john@example.com"
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
-                },
-              })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-          </div>
+            <button type="submit" disabled={loading} className="volunteer-submit">
+              {loading ? 'Registering...' : 'Register as General Volunteer'}
+            </button>
+          </form>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <input
-              type="tel"
-              placeholder="+1234567890"
-              {...register('phone', { required: 'Phone number is required' })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
-          </div>
-
-          {/* Availability */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
-            <select
-              {...register('availability', { required: 'Please select availability' })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="weekdays">Weekdays</option>
-              <option value="weekends">Weekends</option>
-              <option value="flexible">Flexible</option>
-              <option value="evenings">Evenings</option>
-            </select>
-            {errors.availability && <p className="text-red-500 text-sm mt-1">{errors.availability.message}</p>}
-          </div>
-
-          {/* Password Fields */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              placeholder="Enter a strong password"
-              {...register('password', {
-                required: 'Password is required',
-                minLength: {
-                  value: 8,
-                  message: 'Password must be at least 8 characters',
-                },
-              })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-            <input
-              type="password"
-              placeholder="Confirm your password"
-              {...register('confirmPassword', {
-                required: 'Please confirm your password',
-                validate: (value) => value === password || 'Passwords do not match',
-              })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-medium py-2 rounded-lg transition-colors"
-          >
-            {loading ? 'Registering...' : 'Register'}
-          </button>
-        </form>
-
-          <p style={{
-            textAlign: 'center',
-            color: '#6b7280',
-            marginTop: '12px',
-            fontSize: '12px'
-          }}>
+          <p className="volunteer-auth-note">
             Already have an account?{' '}
-            <a href="/login" style={{
-              color: '#0284c7',
-              fontWeight: '600',
-              textDecoration: 'none'
-            }}>
-              Login here
-            </a>
+            {embedded && onLogin ? (
+              <button type="button" className="volunteer-auth-link volunteer-inline-button" onClick={onLogin}>
+                Login here
+              </button>
+            ) : (
+              <Link className="volunteer-auth-link" to="/">Login here</Link>
+            )}
           </p>
         </div>
-      </div>
+    </>
+  );
 
-      <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(-16px) scale(0.97); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <div className="volunteer-app-shell volunteer-auth-backdrop">
+      <div className="volunteer-auth-card is-compact">
+        {content}
+      </div>
     </div>
   );
 }

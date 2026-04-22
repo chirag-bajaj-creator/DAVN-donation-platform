@@ -1,37 +1,35 @@
 require('dotenv').config();
 
+const { logger } = require('./logger');
+
 const requiredEnvVars = [
   'MONGODB_URI',
   'JWT_SECRET',
   'SENDGRID_API_KEY',
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
-  'CLOUDINARY_API_SECRET',
-  'RAZORPAY_KEY_ID',
-  'RAZORPAY_KEY_SECRET',
-  'UPI_MERCHANT_ID'
+  'CLOUDINARY_API_SECRET'
 ];
 
 const validateEnv = () => {
   const missingVars = [];
 
-  requiredEnvVars.forEach(varName => {
+  requiredEnvVars.forEach((varName) => {
     if (!process.env[varName]) {
       missingVars.push(varName);
     }
   });
 
   if (missingVars.length > 0) {
-    console.warn('⚠ Missing environment variables:', missingVars.join(', '));
-    console.warn('⚠ Please update .env file with all required variables');
+    logger.warn({ missingVars }, 'Missing environment variables');
+    logger.warn('Please update .env file with all required variables');
 
-    // In development, continue with warnings; in production, fail
     if (process.env.NODE_ENV === 'production') {
       throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
   }
 
-  console.log('✓ Environment variables validated');
+  logger.info('Environment variables validated');
 };
 
 module.exports = {

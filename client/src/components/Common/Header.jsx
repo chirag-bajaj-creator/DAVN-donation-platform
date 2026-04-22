@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom';
 
 export default function Header() {
   return (
-    <header className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <header className="client-topbar">
+      <div className="client-topbar-inner">
         <div className="flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-primary-600">
+          <Link to="/" className="client-brand">
+            <span className="client-brand-mark">C</span>
             Community Platform
           </Link>
           <nav>
             <ul className="flex space-x-6">
-              <li><Link to="/dashboard" className="text-gray-600 hover:text-primary-600">Dashboard</Link></li>
-              <li><Link to="/donation" className="text-gray-600 hover:text-primary-600">Donate</Link></li>
+              <li><Link to="/dashboard">Dashboard</Link></li>
+              <li><Link to="/donation">Donate</Link></li>
             </ul>
           </nav>
         </div>

@@ -1,6 +1,7 @@
 const Donation = require('../models/Donation');
 const emailService = require('../services/emailService');
 const User = require('../models/User');
+const { logger } = require('../config/logger');
 
 const donationController = {
   /**
@@ -28,7 +29,10 @@ const donationController = {
       try {
         await emailService.sendDonationConfirmation(donor.email, donation);
       } catch (emailError) {
-        console.error('Email notification failed:', emailError.message);
+        logger.warn(
+          { err: emailError, donorEmail: donor?.email, donationId: donation._id },
+          'Donation email notification failed'
+        );
       }
 
       res.status(201).json({

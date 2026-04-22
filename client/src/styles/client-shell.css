@@ -1,0 +1,530 @@
+:root {
+  --client-bg: #1f1017;
+  --client-bg-deep: #12090e;
+  --client-surface: rgba(255, 244, 239, 0.11);
+  --client-surface-strong: rgba(255, 244, 239, 0.18);
+  --client-border: rgba(255, 244, 239, 0.18);
+  --client-text: #fff8f5;
+  --client-muted: rgba(255, 248, 245, 0.72);
+  --client-primary: #fb7185;
+  --client-secondary: #f97316;
+  --client-accent: #fde68a;
+  --client-success: #bbf7d0;
+  --client-danger: #fecdd3;
+  --client-shadow: 0 28px 90px rgba(10, 6, 12, 0.42);
+}
+
+body {
+  color: var(--client-text);
+  background:
+    radial-gradient(circle at 14% 16%, rgba(251, 113, 133, 0.22), transparent 28rem),
+    radial-gradient(circle at 82% 12%, rgba(249, 115, 22, 0.18), transparent 24rem),
+    radial-gradient(circle at 50% 115%, rgba(253, 230, 138, 0.08), transparent 26rem),
+    linear-gradient(135deg, var(--client-bg) 0%, #2f1420 48%, var(--client-bg-deep) 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.client-shell,
+.client-auth-shell,
+.client-modal-shell {
+  position: relative;
+  isolation: isolate;
+  color: var(--client-text);
+}
+
+.client-shell::before,
+.client-auth-shell::before,
+.client-modal-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 18%, rgba(251, 113, 133, 0.18), transparent 18rem),
+    radial-gradient(circle at 86% 20%, rgba(249, 115, 22, 0.14), transparent 16rem),
+    radial-gradient(circle at 50% 100%, rgba(253, 230, 138, 0.06), transparent 20rem);
+  z-index: -1;
+}
+
+.client-shell-main,
+.client-auth-main {
+  width: min(1160px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 116px 0 76px;
+}
+
+.client-shell-section {
+  padding: 28px;
+}
+
+.client-panel,
+.client-shell .client-panel,
+.client-auth-shell .client-panel,
+.client-modal-shell .client-panel {
+  border: 1px solid var(--client-border);
+  background: var(--client-surface);
+  box-shadow: var(--client-shadow);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 30px;
+}
+
+.client-panel-strong {
+  background: var(--client-surface-strong);
+}
+
+.client-panel-soft {
+  background: rgba(255, 244, 239, 0.08);
+}
+
+.client-page-title {
+  margin: 0;
+  color: #fffaf7;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+  font-size: clamp(34px, 4vw, 58px);
+}
+
+.client-page-copy,
+.client-muted {
+  color: var(--client-muted);
+  line-height: 1.7;
+}
+
+.client-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--client-accent);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.client-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fffaf7;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.client-brand-mark {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: #221016;
+  background: linear-gradient(135deg, var(--client-accent), #fff7ed);
+  box-shadow: 0 14px 34px rgba(253, 230, 138, 0.24);
+}
+
+.client-shell .client-button,
+.client-auth-shell .client-button,
+.client-modal-shell .client-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 22px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 850;
+  text-decoration: none;
+  color: #221016;
+  background: linear-gradient(135deg, var(--client-accent), #fff4ef);
+  box-shadow: 0 18px 42px rgba(253, 230, 138, 0.18);
+}
+
+.client-shell .client-button-secondary,
+.client-auth-shell .client-button-secondary,
+.client-modal-shell .client-button-secondary {
+  color: var(--client-text);
+  border: 1px solid var(--client-border);
+  background: rgba(255, 244, 239, 0.08);
+  backdrop-filter: blur(18px);
+  box-shadow: none;
+}
+
+.client-shell .client-button-ghost,
+.client-auth-shell .client-button-ghost,
+.client-modal-shell .client-button-ghost {
+  color: var(--client-text);
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.client-shell .client-tab {
+  padding: 14px 18px;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  color: var(--client-muted);
+  background: transparent;
+}
+
+.client-shell .client-tab.is-active {
+  color: #fffaf7;
+  border-color: var(--client-border);
+  background: rgba(255, 244, 239, 0.08);
+}
+
+.client-shell .client-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.client-shell .client-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.client-shell .client-card {
+  border: 1px solid var(--client-border);
+  border-radius: 28px;
+  background: var(--client-surface);
+  box-shadow: var(--client-shadow);
+  backdrop-filter: blur(24px);
+}
+
+.client-shell .client-card-compact {
+  padding: 22px;
+}
+
+.client-shell .client-card-tight {
+  padding: 18px;
+}
+
+.client-shell .client-hero-copy,
+.client-shell .client-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.client-shell .client-section-copy {
+  max-width: 760px;
+}
+
+.client-shell .client-shell-divider {
+  border-color: rgba(255, 244, 239, 0.14);
+}
+
+.client-shell .client-empty-state {
+  padding: 28px;
+  border-radius: 24px;
+  border: 1px dashed rgba(255, 244, 239, 0.2);
+  background: rgba(255, 244, 239, 0.06);
+  color: var(--client-muted);
+}
+
+.client-shell :is(.text-gray-900, .text-gray-800, .text-gray-700, .text-black) {
+  color: #fffaf7 !important;
+}
+
+.client-shell :is(.text-gray-600, .text-gray-500, .text-gray-400) {
+  color: rgba(255, 248, 245, 0.72) !important;
+}
+
+.client-shell :is(.bg-white, .bg-gray-50, .bg-blue-50, .bg-indigo-100, .bg-red-100, .bg-green-100, .bg-orange-100, .bg-purple-100) {
+  border: 1px solid var(--client-border) !important;
+  background: rgba(255, 244, 239, 0.1) !important;
+  box-shadow: var(--client-shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.client-shell :is(.border-gray-200, .border-gray-300, .border-b) {
+  border-color: rgba(255, 244, 239, 0.16) !important;
+}
+
+.client-shell :is(.hover\:text-gray-900:hover, .hover\:text-gray-700:hover) {
+  color: #fffaf7 !important;
+}
+
+.client-shell .client-form,
+.client-auth-shell .client-form,
+.client-modal-shell .client-form {
+  display: grid;
+  gap: 16px;
+}
+
+.client-shell .client-form :is(label, legend),
+.client-auth-shell .client-form :is(label, legend),
+.client-modal-shell .client-form :is(label, legend) {
+  color: rgba(255, 248, 245, 0.88);
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.client-shell .client-form :is(input, textarea, select),
+.client-auth-shell .client-form :is(input, textarea, select),
+.client-modal-shell .client-form :is(input, textarea, select) {
+  width: 100%;
+  border: 1px solid rgba(255, 244, 239, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 244, 239, 0.08);
+  color: var(--client-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.client-shell .client-form :is(input, textarea, select)::placeholder,
+.client-auth-shell .client-form :is(input, textarea, select)::placeholder,
+.client-modal-shell .client-form :is(input, textarea, select)::placeholder {
+  color: rgba(255, 248, 245, 0.46);
+}
+
+.client-shell .client-form :is(input, textarea, select):focus,
+.client-auth-shell .client-form :is(input, textarea, select):focus,
+.client-modal-shell .client-form :is(input, textarea, select):focus {
+  border-color: rgba(253, 230, 138, 0.55);
+  box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.18);
+}
+
+.client-shell .client-form :is(input, textarea, select):disabled,
+.client-auth-shell .client-form :is(input, textarea, select):disabled,
+.client-modal-shell .client-form :is(input, textarea, select):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.client-shell .client-form input[type='checkbox'],
+.client-auth-shell .client-form input[type='checkbox'],
+.client-modal-shell .client-form input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  accent-color: var(--client-primary);
+}
+
+.client-shell .client-form-help,
+.client-auth-shell .client-form-help,
+.client-modal-shell .client-form-help {
+  color: var(--client-muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.client-shell .client-form-error,
+.client-auth-shell .client-form-error,
+.client-modal-shell .client-form-error {
+  color: var(--client-danger);
+  font-size: 0.88rem;
+}
+
+.client-shell .client-form-success,
+.client-auth-shell .client-form-success,
+.client-modal-shell .client-form-success {
+  color: var(--client-success);
+  font-size: 0.88rem;
+}
+
+.client-shell .client-topbar,
+.client-auth-shell .client-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid transparent;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.client-shell .client-topbar.is-scrolled,
+.client-auth-shell .client-topbar.is-scrolled {
+  border-color: rgba(255, 244, 239, 0.14);
+  background: rgba(31, 16, 23, 0.8);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(22px);
+}
+
+.client-shell .client-topbar-inner,
+.client-auth-shell .client-topbar-inner {
+  width: min(1160px, calc(100% - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.client-shell .client-footer,
+.client-auth-shell .client-footer {
+  width: min(1160px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 18px 0 40px;
+  color: var(--client-muted);
+  text-align: center;
+}
+
+.client-shell .client-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.client-shell .client-stat-card {
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.client-shell .client-stat-card strong {
+  display: block;
+  color: #fffaf7;
+  font-size: 24px;
+}
+
+.client-shell .client-stat-card span {
+  color: var(--client-muted);
+  font-size: 13px;
+}
+
+.client-shell .client-responsive-shell {
+  display: grid;
+  gap: 22px;
+}
+
+.client-shell .client-info-banner {
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(253, 230, 138, 0.18);
+  background: rgba(253, 230, 138, 0.1);
+  color: #fff4cc;
+}
+
+.client-shell .client-danger-banner {
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(254, 205, 211, 0.18);
+  background: rgba(127, 29, 49, 0.28);
+  color: #ffe4e6;
+}
+
+.client-shell .client-split-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.client-shell .client-stack-gap {
+  display: grid;
+  gap: 14px;
+}
+
+.client-modal-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.client-modal-shell .client-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgba(16, 8, 12, 0.72);
+  pointer-events: auto;
+}
+
+.client-modal-shell .client-modal-card {
+  width: min(460px, 100%);
+  max-height: min(860px, calc(100vh - 48px));
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 244, 239, 0.16);
+  background: rgba(29, 15, 21, 0.9);
+  box-shadow: var(--client-shadow);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+
+.client-modal-shell .client-modal-card.is-registering {
+  width: min(560px, 100%);
+}
+
+.client-modal-shell .client-modal-header {
+  position: relative;
+  padding: 24px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(253, 230, 138, 0.2), transparent 14rem),
+    linear-gradient(135deg, rgba(251, 113, 133, 0.92), rgba(249, 115, 22, 0.88));
+}
+
+.client-modal-shell .client-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  color: #fffaf7;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.client-modal-shell .client-modal-body {
+  padding: 24px;
+  max-height: calc(100vh - 190px);
+  overflow-y: auto;
+}
+
+@media (max-width: 920px) {
+  .client-shell-main,
+  .client-auth-main {
+    padding-top: 104px;
+  }
+
+  .client-shell .client-grid-2,
+  .client-shell .client-grid-3,
+  .client-shell .client-stat-grid,
+  .client-shell .client-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .client-shell-main,
+  .client-auth-main,
+  .client-shell .client-topbar-inner,
+  .client-auth-shell .client-topbar-inner,
+  .client-shell .client-footer,
+  .client-auth-shell .client-footer {
+    width: min(100%, calc(100% - 20px));
+  }
+
+  .client-shell-main,
+  .client-auth-main {
+    padding-top: 92px;
+    padding-bottom: 64px;
+  }
+
+  .client-shell .client-shell-section {
+    padding: 22px;
+  }
+
+  .client-modal-shell .client-modal-backdrop {
+    padding: 12px;
+  }
+
+  .client-modal-shell .client-modal-body,
+  .client-modal-shell .client-modal-header {
+    padding: 20px;
+  }
+}

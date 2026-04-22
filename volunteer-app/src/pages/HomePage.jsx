@@ -2,18 +2,46 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from '../components/LoginModal';
+import '../styles/landing.css';
+
+const volunteerStats = [
+  { value: '3-step', label: 'field verification flow' },
+  { value: 'Live', label: 'task assignments' },
+  { value: 'Clear', label: 'report submission' }
+];
+
+const volunteerSteps = [
+  {
+    title: 'Register your profile',
+    copy: 'Choose your volunteer type, share the right details, and enter the approval queue.'
+  },
+  {
+    title: 'Accept assigned cases',
+    copy: 'See verification work clearly, then accept or reject based on your availability.'
+  },
+  {
+    title: 'Submit field reports',
+    copy: 'Send structured reports that help admins approve genuine needy cases with confidence.'
+  }
+];
+
+const taskCards = [
+  ['Individual verification', '2.4 km away', 'Ready'],
+  ['Organization visit', 'Assigned today', 'New'],
+  ['Report follow-up', 'Evidence needed', 'Open']
+];
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
   const { isAuthenticated, loading, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isAuthenticated && !loading && user?.role === 'volunteer') {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [isAuthenticated, loading, navigate, user]);
+  const openAuth = (mode) => {
+    setAuthMode(mode);
+    setIsAuthOpen(true);
+  };
 
   useEffect(() => {
     if (isAuthenticated && !loading && user && user.role !== 'volunteer') {
@@ -30,89 +58,140 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
-      {/* Navigation */}
-      <nav style={{
-        position: 'fixed',
-        width: '100%',
-        top: 0,
-        zIndex: 40,
-        transition: 'all 0.3s',
-        backgroundColor: isScrolled ? '#fff' : 'transparent',
-        boxShadow: isScrolled ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-        borderBottom: isScrolled ? '1px solid #e5e7eb' : 'none'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', backgroundImage: 'linear-gradient(135deg, #0ea5e9, #a855f7)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+    <div className="landing-page volunteer-landing">
+      <nav className={`landing-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="landing-nav-inner">
+          <div className="landing-brand">
+            <span className="landing-brand-mark">V</span>
             Volunteer Network
           </div>
-          <button onClick={() => setIsLoginOpen(true)} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}>
+          <button className="landing-nav-button" onClick={() => openAuth('login')}>
             Sign In
           </button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ paddingTop: '128px', paddingBottom: '80px', background: 'linear-gradient(to bottom, #0284c7, #0ea5e9, #a855f7)', color: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px', lineHeight: '1.2' }}>Make a Real Impact as a Volunteer</h1>
-          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>Help verify needy individuals and organizations, and be part of making charitable giving transparent and impactful.</p>
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            <button onClick={() => setIsLoginOpen(true)} style={{ backgroundColor: '#fff', color: '#0284c7', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
-              Sign In
-            </button>
-            <button onClick={() => navigate('/register-type')} style={{ backgroundColor: 'transparent', color: '#fff', padding: '12px 32px', borderRadius: '8px', border: '2px solid #fff', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
-              Register
-            </button>
-          </div>
-        </div>
-      </section>
+      <main>
+        <section className="landing-hero">
+          <div className="landing-orb landing-orb-one" />
+          <div className="landing-orb landing-orb-two" />
 
-      {/* Steps */}
-      <section style={{ padding: '80px 16px', backgroundColor: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '36px', fontWeight: 'bold', textAlign: 'center', marginBottom: '64px' }}>How It Works</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#0284c7', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 16px' }}>1</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Register</h3>
-              <p style={{ color: '#6b7280' }}>Create a volunteer account and provide your details.</p>
+          <div className="landing-shell hero-grid">
+            <div className="hero-copy">
+              <span className="eyebrow">Field verification network</span>
+              <h1>Turn local visits into trusted reports for real community support.</h1>
+              <p>
+                A bold volunteer portal for receiving assignments, verifying needy profiles, and submitting reports that make donations safer and more transparent.
+              </p>
+
+              <div className="hero-actions">
+                <button className="primary-cta" onClick={() => openAuth('register')}>
+                  Become a Volunteer
+                </button>
+                <button className="secondary-cta" onClick={() => openAuth('login')}>
+                  Volunteer Sign In
+                </button>
+              </div>
+
+              <div className="metric-strip">
+                {volunteerStats.map((stat) => (
+                  <div className="metric-card" key={stat.label}>
+                    <strong>{stat.value}</strong>
+                    <span>{stat.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#0284c7', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 16px' }}>2</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Get Tasks</h3>
-              <p style={{ color: '#6b7280' }}>Receive verification tasks and assignments.</p>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#0284c7', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 16px' }}>3</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Submit Reports</h3>
-              <p style={{ color: '#6b7280' }}>Submit verification reports and help the community.</p>
+
+            <div className="hero-visual glass-panel field-board">
+              <div className="visual-header">
+                <span>Today&apos;s Field Board</span>
+                <div className="pulse-dot" />
+              </div>
+              <div className="map-card">
+                <span className="map-pin pin-one" />
+                <span className="map-pin pin-two" />
+                <span className="map-pin pin-three" />
+              </div>
+              <div className="task-list">
+                {taskCards.map(([name, detail, status]) => (
+                  <div className="task-row" key={name}>
+                    <div>
+                      <strong>{name}</strong>
+                      <span>{detail}</span>
+                    </div>
+                    <em>{status}</em>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section style={{ padding: '64px 16px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>Ready to Help Others?</h2>
-          <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '32px' }}>Start your volunteer journey and make a real impact today.</p>
-          <button onClick={() => navigate('/register-type')} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
-            Register Now
-          </button>
-        </div>
-      </section>
-
-      {/* Login Modal */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-
-      {/* Footer */}
-      <footer style={{ backgroundColor: '#111827', color: '#9ca3af', padding: '48px 16px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ borderTop: '1px solid #374151', paddingTop: '32px', textAlign: 'center', fontSize: '14px' }}>
-            <p>&copy; 2024 Volunteer Network. All rights reserved.</p>
+        <section className="landing-section" id="volunteer-flow">
+          <div className="landing-shell section-heading">
+            <span className="eyebrow">How it works</span>
+            <h2>Simple enough for the field. Structured enough for admins.</h2>
+            <p>Every volunteer action supports a clean path from registration to verified evidence.</p>
           </div>
-        </div>
+
+          <div className="landing-shell step-grid">
+            {volunteerSteps.map((step, index) => (
+              <article className="glass-panel step-card" key={step.title}>
+                <span>{index + 1}</span>
+                <h3>{step.title}</h3>
+                <p>{step.copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section split-section">
+          <div className="landing-shell split-grid">
+            <div className="glass-panel insight-card">
+              <span className="eyebrow">Report clarity</span>
+              <h2>Capture the visit, submit the facts, close the loop.</h2>
+              <p>
+                Volunteers help the platform separate genuine needs from incomplete claims by submitting consistent field reports.
+              </p>
+            </div>
+            <div className="report-preview glass-panel">
+              <div>
+                <span>Report status</span>
+                <strong>Draft ready</strong>
+              </div>
+              <div>
+                <span>Evidence</span>
+                <strong>Photos + notes</strong>
+              </div>
+              <div>
+                <span>Admin review</span>
+                <strong>Next step</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-final">
+          <div className="landing-shell glass-panel final-card">
+            <h2>Ready to verify what matters?</h2>
+            <p>Register as a volunteer or sign in to continue your assigned work.</p>
+            <div className="hero-actions final-actions">
+              <button className="primary-cta" onClick={() => openAuth('register')}>
+                Register Now
+              </button>
+              <button className="secondary-cta" onClick={() => openAuth('login')}>
+                Sign In
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <LoginModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} initialMode={authMode} />
+
+      <footer className="landing-footer">
+        <p>&copy; 2024 Volunteer Network. All rights reserved.</p>
       </footer>
     </div>
   );

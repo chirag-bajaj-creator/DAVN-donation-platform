@@ -40,6 +40,38 @@
 
 ## Recent Changes
 
+- Redesigned the three public landing pages with a bold minimalist glassmorphism system:
+  - `admin-app/src/pages/Home/AdminHomePage.jsx` now uses an executive navy/cyan/amber admin command-center design.
+  - `volunteer-app/src/pages/HomePage.jsx` now uses a forest/emerald/teal volunteer field-verification design.
+  - `client/src/pages/Home/HomePage.jsx` now uses a warm plum/rose/orange community-giving design.
+  - added isolated landing styles in each frontend at `src/styles/landing.css`.
+  - preserved existing auth modal behavior and CTA routes.
+- Verified landing redesign builds with elevated `npm.cmd run build` for `admin-app`, `volunteer-app`, and `client`.
+  - Initial non-elevated builds were blocked by Vite `spawn EPERM` in this sandbox.
+  - Admin build completed with existing Tailwind `@tailwind`/`@apply` minifier warnings.
+  - Client build completed with a plugin timing warning.
+- Extended the glassmorphism redesign beyond landing pages:
+  - admin protected layout/pages now match the navy/cyan/amber command-center theme.
+  - volunteer layout, login/register pages, and restored specialized/general registration pages now match the forest/emerald/teal field-verification theme.
+  - client app shell/common UI now uses the warm plum/rose/orange community-giving theme via `client/src/styles/client-shell.css`.
+  - restored `volunteer-app/src/pages/SpecializedRegisterPage.jsx` after an interrupted agent run had deleted it while `App.jsx` still imported it.
+- Final frontend verification after direct cleanup:
+  - elevated `npm.cmd run build` passed for `admin-app`, `volunteer-app`, and `client`.
+  - non-elevated builds still hit sandbox/Vite `spawn EPERM`.
+  - admin build still emits existing Tailwind `@tailwind`/`@apply` minifier warnings, but succeeds.
+- Converted volunteer authentication/registration entry points to popup-only behavior:
+  - homepage sign-in/register CTAs now open `volunteer-app/src/components/LoginModal.jsx`.
+  - the modal supports login, role choice, specialized registration, and general registration modes.
+  - `/login`, `/register-type`, `/register/specialized`, and `/register/unspecialized` now redirect to `/` instead of rendering standalone auth pages.
+  - unauthenticated protected volunteer routes now redirect to `/`.
+  - elevated `npm.cmd run build` passed for `volunteer-app`.
+- Added Step 15 basic backend monitoring/logging:
+  - installed `pino` and `pino-http` in `backend`
+  - added shared logger module at `backend/config/logger.js`
+  - wired request logging middleware into `backend/server.js`
+  - replaced central runtime `console.*` logging in backend startup, env validation, DB connection, error handling, and email-related operational paths
+  - kept `/health` in place for UptimeRobot and suppressed noisy auto-request logs for that path
+  - made Razorpay/UPI env vars optional in `backend/config/env.js` because payment features are not currently active
 - Fixed admin auth modal visibility in `admin-app`:
   - rewrote `admin-app/src/components/Common/LoginModal.jsx` to use dedicated app CSS classes for popup rendering
   - added explicit auth modal shell/form styling in `admin-app/src/styles/admin.css`
@@ -111,6 +143,29 @@
   - `volunteer-app/vercel.json`
 - Reached deployment stage, but memory had not been updated to reflect that milestone.
 - Cron job setup was completed/handled in a prior session, but the exact schedule, provider, and task details still need to be recorded here if required later.
+- Fixed local client registration 404 by adding a Vite dev proxy in `client/vite.config.js`:
+  - `/api` now proxies to `http://localhost:5000` during local development.
+  - production still uses relative `/api` for Vercel rewrites.
+- Fixed local volunteer specialized registration 404 by adding a Vite dev proxy in `volunteer-app/vite.config.js`:
+  - `/api` now proxies to `http://localhost:5000` during local development.
+  - this covers `/api/auth/register` and `/api/volunteers/register/specialized` from the volunteer app.
+- Cleaned up post-login styling and contrast in volunteer/client apps:
+  - replaced old blue/purple inline volunteer protected pages with the forest/matte glass system for dashboard, tasks, and report submission.
+  - added client-shell contrast overrides so gray/black utility text remains readable on crimson/matte surfaces.
+  - moved the client donation form page into `MainLayout` and the client matte glass system.
+  - elevated `npm.cmd run build` passed for `volunteer-app` and `client`; non-elevated builds still hit Vite sandbox `spawn EPERM`.
+- Changed auth behavior across all three frontends so saved localStorage sessions are not silently restored:
+  - `client`, `volunteer-app`, and `admin-app` clear stored auth state on app startup and require explicit sign-in.
+  - protected routes now redirect unauthenticated users to `/login`.
+  - client/admin `/login` routes open the existing login modal on the landing page; volunteer `/login` renders `LoginPage`.
+  - elevated `npm.cmd run build` passed for `client`, `volunteer-app`, and `admin-app`.
+- Tightened auth redirect behavior after dashboards were still opening without login:
+  - added refresh/close auth clearing in all three auth providers.
+  - removed admin landing auto-redirect to `/panel`.
+  - removed volunteer landing auto-redirect to `/dashboard`.
+  - removed client/admin login-form auto-redirect effects based only on `isAuthenticated`.
+  - only successful login form submission now redirects to dashboard/panel.
+  - elevated `npm.cmd run build` passed again for `client`, `volunteer-app`, and `admin-app`.
 
 ## Known Issues / Pending Work
 

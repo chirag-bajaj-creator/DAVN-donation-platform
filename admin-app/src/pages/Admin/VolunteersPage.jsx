@@ -54,7 +54,15 @@ export default function VolunteersPage() {
   return (
     <AdminLayout>
       <div className="admin-page">
-        <h1>Volunteer Management</h1>
+        <div className="page-header">
+          <div className="page-title-copy">
+            <span className="page-eyebrow">Volunteer operations</span>
+            <h1>Volunteer Management</h1>
+            <p className="page-description">
+              Approve new volunteers, monitor active status, and review rejected submissions.
+            </p>
+          </div>
+        </div>
         {error && <div className="error-message">{error}</div>}
 
         <div className="tabs">
@@ -72,37 +80,39 @@ export default function VolunteersPage() {
           </button>
         </div>
 
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Specialization</th>
-              <th>Status</th>
-              {tab === 'pending' && <th>Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {volunteers.length > 0 ? volunteers.map(v => (
-              <tr key={v._id}>
-                <td>{v.name}</td>
-                <td>{v.email}</td>
-                <td>{v.phone}</td>
-                <td>{v.specialization || 'N/A'}</td>
-                <td><span className={`badge badge-${v.status}`}>{v.status}</span></td>
-                {tab === 'pending' && (
-                  <td>
-                    <button className="btn-small btn-approve" onClick={() => handleApprove(v._id)}>Approve</button>
-                    <button className="btn-small btn-reject" onClick={() => setRejectModal(v._id)}>Reject</button>
-                  </td>
-                )}
+        <div className="table-shell">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Specialization</th>
+                <th>Status</th>
+                {tab === 'pending' && <th>Actions</th>}
               </tr>
-            )) : (
-              <tr><td colSpan="6">No volunteers found</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {volunteers.length > 0 ? volunteers.map(v => (
+                <tr key={v._id}>
+                  <td>{v.name}</td>
+                  <td>{v.email}</td>
+                  <td>{v.phone}</td>
+                  <td>{v.specialization || 'N/A'}</td>
+                  <td><span className={`badge badge-${v.status}`}>{v.status}</span></td>
+                  {tab === 'pending' && (
+                    <td>
+                      <button className="btn-small btn-approve" onClick={() => handleApprove(v._id)}>Approve</button>
+                      <button className="btn-small btn-reject" onClick={() => setRejectModal(v._id)}>Reject</button>
+                    </td>
+                  )}
+                </tr>
+              )) : (
+                <tr><td colSpan="6">No volunteers found</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {rejectModal && (
           <div className="modal-overlay">

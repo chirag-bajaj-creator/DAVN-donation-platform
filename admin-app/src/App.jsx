@@ -31,6 +31,7 @@ function App() {
           <Toast />
           <Routes>
             <Route path="/" element={<AdminHomePage />} />
+            <Route path="/login" element={<AdminHomePage />} />
             <Route
               path="/panel"
               element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>}

@@ -89,71 +89,85 @@ export default function NeedyPage() {
   return (
     <AdminLayout>
       <div className="admin-page">
-        <h1>Needy Verification</h1>
+        <div className="page-header">
+          <div className="page-title-copy">
+            <span className="page-eyebrow">Verification queue</span>
+            <h1>Needy Verification</h1>
+            <p className="page-description">
+              Assign volunteers to pending cases and download submitted verification reports.
+            </p>
+          </div>
+        </div>
         {error && <div className="error-message">{error}</div>}
 
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Registered</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {needy.length > 0 ? needy.map(n => (
-              <tr key={n._id}>
-                <td>{n.name}</td>
-                <td>{n.email}</td>
-                <td>{n.phone}</td>
-                <td>{new Date(n.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <button className="btn-small btn-assign" onClick={() => setAssignModal(n._id)}>
-                    Assign Volunteer
-                  </button>
-                </td>
+        <div className="table-shell">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Registered</th>
+                <th>Action</th>
               </tr>
-            )) : (
-              <tr><td colSpan="5">No pending needy found</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {needy.length > 0 ? needy.map(n => (
+                <tr key={n._id}>
+                  <td>{n.name}</td>
+                  <td>{n.email}</td>
+                  <td>{n.phone}</td>
+                  <td>{new Date(n.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button className="btn-small btn-assign" onClick={() => setAssignModal(n._id)}>
+                      Assign Volunteer
+                    </button>
+                  </td>
+                </tr>
+              )) : (
+                <tr><td colSpan="5">No pending needy found</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-        <h2 style={{ marginTop: '32px' }}>Volunteer Reports</h2>
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Volunteer</th>
-              <th>Needy Type</th>
-              <th>Status</th>
-              <th>Recommendation</th>
-              <th>Trust Score</th>
-              <th>Submitted</th>
-              <th>Download</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.length > 0 ? reports.map(report => (
-              <tr key={report._id}>
-                <td>{report.verified_by?.name || report.verified_by?.email || 'Unknown'}</td>
-                <td>{report.needy_type}</td>
-                <td>{report.status}</td>
-                <td>{report.recommendation}</td>
-                <td>{report.trustScore}</td>
-                <td>{new Date(report.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <button className="btn-small btn-assign" onClick={() => handleDownloadPdf(report)}>
-                    Download PDF
-                  </button>
-                </td>
-              </tr>
-            )) : (
-              <tr><td colSpan="7">No verification reports submitted yet</td></tr>
-            )}
-          </tbody>
-        </table>
+        <div className="section-spacing">
+          <h2 className="section-title">Volunteer Reports</h2>
+          <div className="table-shell">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Volunteer</th>
+                  <th>Needy Type</th>
+                  <th>Status</th>
+                  <th>Recommendation</th>
+                  <th>Trust Score</th>
+                  <th>Submitted</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.length > 0 ? reports.map(report => (
+                  <tr key={report._id}>
+                    <td>{report.verified_by?.name || report.verified_by?.email || 'Unknown'}</td>
+                    <td>{report.needy_type}</td>
+                    <td>{report.status}</td>
+                    <td>{report.recommendation}</td>
+                    <td>{report.trustScore}</td>
+                    <td>{new Date(report.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <button className="btn-small btn-assign" onClick={() => handleDownloadPdf(report)}>
+                        Download PDF
+                      </button>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan="7">No verification reports submitted yet</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         {assignModal && (
           <div className="modal-overlay">

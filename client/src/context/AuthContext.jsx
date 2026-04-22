@@ -19,30 +19,16 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    const clearStoredAuth = () => {
+      clearClientSession();
+      localStorage.removeItem('user');
+    };
+
     const initializeAuth = () => {
       try {
-        const token = authService.getAuthToken();
-        const storedUser = localStorage.getItem('user');
-
-        if (token && storedUser) {
-          const userData = JSON.parse(storedUser);
-
-          if (normalizeRole(userData.role) === CLIENT_ROLE) {
-            setUser(userData);
-            setIsAuthenticated(true);
-          } else {
-            clearClientSession();
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } else if (token || storedUser) {
-          clearClientSession();
-          setUser(null);
-          setIsAuthenticated(false);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+        clearStoredAuth();
+        setUser(null);
+        setIsAuthenticated(false);
       } catch (error) {
         console.error('Auth initialization error:', error);
         clearClientSession();
@@ -54,6 +40,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
+
+    window.addEventListener('beforeunload', clearStoredAuth);
+    return () => window.removeEventListener('beforeunload', clearStoredAuth);
   }, []);
 
   const login = useCallback(async (credentials) => {

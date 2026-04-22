@@ -4,15 +4,10 @@ import { useAuth } from '../../hooks/useAuth';
 import '../styles/adminLayout.css';
 
 export default function AdminLayout({ children }) {
-  console.log('AdminLayout RENDERING');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-
-  console.log('AdminLayout - user:', user);
-  console.log('AdminLayout - logout function exists:', !!logout);
-  console.log('AdminLayout - children:', children);
 
   const menuItems = [
     { label: 'Dashboard', path: '/panel' },
@@ -22,43 +17,38 @@ export default function AdminLayout({ children }) {
     { label: 'Users', path: '/panel/users' },
   ];
 
-  const handleLogout = () => {
-    console.log('LOGOUT BUTTON CLICKED');
-    console.log('logout function:', logout);
+  const currentSection = menuItems.find((item) => item.path === location.pathname)?.label || 'Dashboard';
 
+  const handleLogout = async () => {
     try {
-      logout();
-      console.log('Logged out successfully');
+      await logout();
       navigate('/');
     } catch (err) {
-      console.error('Logout error:', err);
+      navigate('/');
     }
   };
 
   return (
     <div className="admin-layout">
+      <div className="admin-orb admin-orb-one" />
+      <div className="admin-orb admin-orb-two" />
       <div
-        style={{
-          position: 'fixed',
-          top: '10px',
-          left: '10px',
-          padding: '15px',
-          backgroundColor: '#00ff00',
-          color: '#000',
-          zIndex: 9999,
-          fontWeight: 'bold',
-          fontSize: '16px',
-          borderRadius: '4px',
-        }}
-      >
-        AdminLayout VISIBLE!
-      </div>
+        className={`admin-sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        role="presentation"
+      />
 
-      <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+      <aside id="admin-sidebar" className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
-          <h2>Admin Portal</h2>
-          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            ☰
+          <div className="sidebar-brand">
+            <span className="sidebar-mark">A</span>
+            <div>
+              <h2>Admin Portal</h2>
+              <p>Executive command center</p>
+            </div>
+          </div>
+          <button type="button" className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            Menu
           </button>
         </div>
 
@@ -79,25 +69,40 @@ export default function AdminLayout({ children }) {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>
+          <button type="button" className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
         </div>
       </aside>
 
-      <main className="admin-main" style={{ backgroundColor: '#f5f5f5' }}>
-        <header
-          className="admin-header"
-          style={{ backgroundColor: '#fff', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ color: '#0284c7', margin: 0 }}>🏠 Admin Panel</h1>
+      <main className="admin-main">
+        <header className="admin-header">
+          <div className="admin-header-copy">
+            <span className="admin-header-kicker">Internal operations</span>
+            <h1>Admin panel</h1>
+            <p>{currentSection} oversight for approvals, verification, and reporting.</p>
+          </div>
+          <div className="admin-header-actions">
+            <div className="admin-user-chip">
+              <span className="admin-user-label">Signed in</span>
+              <strong>{user?.name || user?.email || 'Admin'}</strong>
+            </div>
+            <button
+              type="button"
+              className="sidebar-toggle-btn"
+              onClick={() => setSidebarOpen((open) => !open)}
+              aria-controls="admin-sidebar"
+              aria-expanded={sidebarOpen}
+            >
+              {sidebarOpen ? 'Close menu' : 'Open menu'}
+            </button>
+            <button type="button" className="logout-btn-header" onClick={handleLogout}>
+              Logout
+            </button>
           </div>
         </header>
 
-        <div className="content" style={{ padding: '30px', minHeight: '100vh' }}>
-          {children}
-        </div>
+        <div className="content">{children}</div>
       </main>
     </div>
   );

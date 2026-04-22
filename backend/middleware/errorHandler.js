@@ -1,17 +1,21 @@
+const { logger } = require('../config/logger');
+
 const errorHandler = (err, req, res, next) => {
   const timestamp = new Date().toISOString();
+  const requestLogger = req.log || logger;
 
-  console.error('[ERROR]', {
+  requestLogger.error({
+    err,
     timestamp,
     message: err.message,
     code: err.code,
     path: req.path,
-    method: req.method
-  });
+    method: req.method,
+    requestId: req.id
+  }, 'Request handling failed');
 
-  // Mongoose validation error
   if (err.name === 'ValidationError') {
-    const details = Object.keys(err.errors).map(key => ({
+    const details = Object.keys(err.errors).map((key) => ({
       field: key,
       message: err.errors[key].message
     }));
@@ -25,7 +29,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Mongoose duplicate key error
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     return res.status(422).json({
@@ -37,7 +40,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // JWT errors
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({
       success: false,
@@ -56,7 +58,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Custom application errors
   if (err.statusCode) {
     return res.status(err.statusCode).json({
       success: false,
@@ -66,7 +67,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Default error
   return res.status(err.status || 500).json({
     success: false,
     error: err.message || 'Internal server error',

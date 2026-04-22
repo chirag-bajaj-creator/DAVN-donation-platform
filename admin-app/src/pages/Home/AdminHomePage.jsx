@@ -1,11 +1,44 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import LoginModal from '../../components/Common/LoginModal';
 import Toast from '../../components/Common/Toast';
+import '../../styles/landing.css';
+
+const adminMetrics = [
+  { value: '24/7', label: 'platform oversight' },
+  { value: '4', label: 'core admin modules' },
+  { value: 'Live', label: 'case updates' }
+];
+
+const adminModules = [
+  {
+    title: 'Donation intelligence',
+    copy: 'Track contribution flow, donor activity, and category movement from one focused command view.'
+  },
+  {
+    title: 'Volunteer verification',
+    copy: 'Review volunteer registrations, approve trusted profiles, and keep field teams accountable.'
+  },
+  {
+    title: 'Needy case control',
+    copy: 'Assign verification work, monitor reports, and move cases forward with clear operational context.'
+  },
+  {
+    title: 'User governance',
+    copy: 'Protect access with role-aware administration across donors, volunteers, needy users, and admins.'
+  }
+];
+
+const activityRows = [
+  ['Verification report', 'Ready for review', 'High'],
+  ['Volunteer approval', 'Pending decision', 'Medium'],
+  ['Donation ledger', 'Synced recently', 'Stable']
+];
 
 export default function AdminHomePage() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const location = useLocation();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(location.pathname === '/login');
   const [isScrolled, setIsScrolled] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -19,11 +52,15 @@ export default function AdminHomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (location.pathname === '/login') {
+      setIsLoginModalOpen(true);
+    }
+  }, [location.pathname]);
+
   // Show a message if logged in but not as admin
   useEffect(() => {
-    if (isAuthenticated && user && user.role === 'admin') {
-      navigate('/panel', { replace: true });
-    } else if (isAuthenticated && user && user.role !== 'admin') {
+    if (isAuthenticated && user && user.role !== 'admin') {
       setError(`Access Denied: Admin account required. Your role is '${user.role}'`);
       setTimeout(() => {
         localStorage.removeItem('authToken');
@@ -34,62 +71,134 @@ export default function AdminHomePage() {
   }, [isAuthenticated, user, navigate]);
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
-      {/* Navigation */}
-      <nav style={{
-        position: 'fixed',
-        width: '100%',
-        top: 0,
-        zIndex: 40,
-        transition: 'all 0.3s',
-        backgroundColor: isScrolled ? '#fff' : 'transparent',
-        boxShadow: isScrolled ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-        borderBottom: isScrolled ? '1px solid #e5e7eb' : 'none'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', backgroundImage: 'linear-gradient(135deg, #0ea5e9, #a855f7)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+    <div className="landing-page admin-landing">
+      <nav className={`landing-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="landing-nav-inner">
+          <div className="landing-brand">
+            <span className="landing-brand-mark">A</span>
             Admin Portal
           </div>
-          <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}>
+          <button className="landing-nav-button" onClick={() => setIsLoginModalOpen(true)}>
             Admin Sign In
           </button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ paddingTop: '128px', paddingBottom: '80px', background: 'linear-gradient(to bottom, #0284c7, #0ea5e9, #a855f7)', color: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px', lineHeight: '1.2' }}>Admin Control Panel</h1>
-          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>Manage donations, verify volunteers, and oversee all platform activities</p>
-          <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#fff', color: '#0284c7', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
-            Admin Login
-          </button>
-        </div>
-      </section>
+      <main>
+        <section className="landing-hero">
+          <div className="landing-orb landing-orb-one" />
+          <div className="landing-orb landing-orb-two" />
 
-      {/* Features */}
-      <section style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '1200px', margin: '0 auto', padding: '80px 16px' }}>
-        <h2 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '48px', textAlign: 'center' }}>Admin Features</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '32px' }}>
-          {[
-            { title: 'Dashboard', desc: 'Monitor platform statistics and metrics' },
-            { title: 'Donations', desc: 'Track and manage all donations' },
-            { title: 'Volunteers', desc: 'Verify and manage volunteer registrations' },
-            { title: 'Needy Verification', desc: 'Review and assign verification tasks' },
-            { title: 'User Management', desc: 'Control user roles and access' }
-          ].map((feature, i) => (
-            <div key={i} style={{ padding: '24px', border: '1px solid #e5e7eb', borderRadius: '8px', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '12px' }}>{feature.title}</h3>
-              <p style={{ color: '#666' }}>{feature.desc}</p>
+          <div className="landing-shell hero-grid">
+            <div className="hero-copy">
+              <span className="eyebrow">Operations command center</span>
+              <h1>Run every donation, volunteer, and verification flow from one calm control room.</h1>
+              <p>
+                A focused admin landing experience for overseeing cases, reports, approvals, users, and donation activity without visual noise.
+              </p>
+
+              <div className="hero-actions">
+                <button className="primary-cta" onClick={() => setIsLoginModalOpen(true)}>
+                  Enter Admin Panel
+                </button>
+                <a className="secondary-cta" href="#admin-modules">
+                  View Modules
+                </a>
+              </div>
+
+              <div className="metric-strip">
+                {adminMetrics.map((metric) => (
+                  <div className="metric-card" key={metric.label}>
+                    <strong>{metric.value}</strong>
+                    <span>{metric.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Login Modal */}
+            <div className="hero-visual glass-panel">
+              <div className="visual-header">
+                <span>Admin Console</span>
+                <div className="visual-dots">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              </div>
+              <div className="command-score">
+                <span>Platform Readiness</span>
+                <strong>96%</strong>
+              </div>
+              <div className="visual-bars">
+                <span style={{ '--bar': '88%' }} />
+                <span style={{ '--bar': '64%' }} />
+                <span style={{ '--bar': '76%' }} />
+              </div>
+              <div className="activity-list">
+                {activityRows.map(([name, status, priority]) => (
+                  <div className="activity-row" key={name}>
+                    <div>
+                      <strong>{name}</strong>
+                      <span>{status}</span>
+                    </div>
+                    <em>{priority}</em>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-section" id="admin-modules">
+          <div className="landing-shell section-heading">
+            <span className="eyebrow">Admin workflows</span>
+            <h2>Designed for decisions, not clutter.</h2>
+            <p>Each module supports a clear operational task: verify, assign, review, approve, and govern.</p>
+          </div>
+
+          <div className="landing-shell module-grid">
+            {adminModules.map((module, index) => (
+              <article className="glass-panel module-card" key={module.title}>
+                <span className="module-index">0{index + 1}</span>
+                <h3>{module.title}</h3>
+                <p>{module.copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section split-section">
+          <div className="landing-shell split-grid">
+            <div className="glass-panel insight-card">
+              <span className="eyebrow">Live review loop</span>
+              <h2>Reports, assignments, and role access stay visible.</h2>
+              <p>
+                The admin experience is positioned around accountability: every approval, rejection, report download, and case assignment has a clear place.
+              </p>
+            </div>
+            <div className="timeline-card">
+              {['Volunteer submits report', 'Admin reviews evidence', 'Case status updates', 'Dashboard reflects progress'].map((step) => (
+                <div className="timeline-step" key={step}>
+                  <span />
+                  <p>{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-final">
+          <div className="landing-shell glass-panel final-card">
+            <h2>Ready to manage the platform with focus?</h2>
+            <p>Sign in with an admin account to access the protected panel.</p>
+            <button className="primary-cta" onClick={() => setIsLoginModalOpen(true)}>
+              Admin Sign In
+            </button>
+          </div>
+        </section>
+      </main>
+
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
-
-      {/* Error Toast */}
       {error && <Toast message={error} type="error" />}
     </div>
   );

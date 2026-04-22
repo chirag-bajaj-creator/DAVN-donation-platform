@@ -3,6 +3,7 @@ const NeededIndividual = require('../models/NeededIndividual');
 const NeededOrganization = require('../models/NeededOrganization');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
+const { logger } = require('../config/logger');
 
 const verificationController = {
   /**
@@ -268,7 +269,10 @@ const verificationController = {
           );
         }
       } catch (emailError) {
-        console.error('Failed to send verification email:', emailError.message);
+        logger.warn(
+          { err: emailError, needyId: needy_id, needyType: needy_type },
+          'Failed to send verification email'
+        );
       }
 
       res.status(200).json({

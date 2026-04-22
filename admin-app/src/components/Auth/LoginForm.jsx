@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../hooks';
 import { validateEmail, validatePassword } from '../../utils/validation';
@@ -13,16 +13,10 @@ export default function LoginForm() {
       rememberMe: !!localStorage.getItem('rememberEmail'),
     },
   });
-  const { login, loading: isLoading, isAuthenticated } = useAuth();
+  const { login, loading: isLoading } = useAuth();
   const [apiError, setApiError] = useState('');
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/panel', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
 
   const onSubmit = async (data) => {
     try {

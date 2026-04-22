@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
+const { logger } = require('../config/logger');
 
-// Initialize email transporter using SendGrid
 const transporter = nodemailer.createTransport({
   host: 'smtp.sendgrid.net',
   port: 587,
@@ -12,9 +12,6 @@ const transporter = nodemailer.createTransport({
 });
 
 const emailService = {
-  /**
-   * Send password reset email
-   */
   sendPasswordReset: async (email, token, resetUrl) => {
     try {
       const mailOptions = {
@@ -38,16 +35,13 @@ const emailService = {
       };
 
       await transporter.sendMail(mailOptions);
-      console.log('✓ Password reset email sent to', email);
+      logger.info({ email }, 'Password reset email sent');
     } catch (error) {
-      console.error('✗ Failed to send password reset email:', error.message);
+      logger.error({ err: error, email }, 'Failed to send password reset email');
       throw new Error('Failed to send password reset email');
     }
   },
 
-  /**
-   * Send donation confirmation email
-   */
   sendDonationConfirmation: async (email, donation) => {
     try {
       const mailOptions = {
@@ -61,7 +55,7 @@ const emailService = {
             <div style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin: 20px 0;">
               <p><strong>Donation ID:</strong> ${donation._id}</p>
               <p><strong>Type:</strong> ${donation.type.toUpperCase()}</p>
-              <p><strong>Amount:</strong> ₹${donation.amount}</p>
+              <p><strong>Amount:</strong> Rs. ${donation.amount}</p>
               <p><strong>Status:</strong> ${donation.status}</p>
               <p><strong>Date:</strong> ${new Date(donation.createdAt).toLocaleDateString()}</p>
             </div>
@@ -71,16 +65,12 @@ const emailService = {
       };
 
       await transporter.sendMail(mailOptions);
-      console.log('✓ Donation confirmation email sent to', email);
+      logger.info({ email, donationId: donation._id }, 'Donation confirmation email sent');
     } catch (error) {
-      console.error('✗ Failed to send donation confirmation email:', error.message);
-      // Don't throw error - don't block donation process if email fails
+      logger.error({ err: error, email, donationId: donation._id }, 'Failed to send donation confirmation email');
     }
   },
 
-  /**
-   * Send verification status update email
-   */
   sendVerificationUpdate: async (email, needy, status, comment = '') => {
     try {
       const statusMessage = status === 'approved'
@@ -90,7 +80,7 @@ const emailService = {
       const mailOptions = {
         from: process.env.SENDGRID_FROM_EMAIL || 'noreply@hravinder.com',
         to: email,
-        subject: `Verification Update - Hravinder`,
+        subject: 'Verification Update - Hravinder',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Verification Status Update</h2>
@@ -106,16 +96,12 @@ const emailService = {
       };
 
       await transporter.sendMail(mailOptions);
-      console.log('✓ Verification update email sent to', email);
+      logger.info({ email, status, needyId: needy?._id }, 'Verification update email sent');
     } catch (error) {
-      console.error('✗ Failed to send verification update email:', error.message);
-      // Don't throw error - don't block verification process if email fails
+      logger.error({ err: error, email, status, needyId: needy?._id }, 'Failed to send verification update email');
     }
   },
 
-  /**
-   * Send QR payment expiry reminder
-   */
   sendQRExpiryReminder: async (email, qrId, expiryTime) => {
     try {
       const mailOptions = {
@@ -133,9 +119,9 @@ const emailService = {
       };
 
       await transporter.sendMail(mailOptions);
-      console.log('✓ QR expiry reminder email sent to', email);
+      logger.info({ email, qrId }, 'QR expiry reminder email sent');
     } catch (error) {
-      console.error('✗ Failed to send QR expiry reminder:', error.message);
+      logger.error({ err: error, email, qrId }, 'Failed to send QR expiry reminder');
     }
   }
 };

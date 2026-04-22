@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
 const crypto = require('crypto');
+const { logger } = require('../config/logger');
 
 const generateTokens = (userId, role) => {
   const accessToken = jwt.sign(
@@ -258,7 +259,7 @@ const authController = {
       try {
         await emailService.sendPasswordReset(user.email, resetToken, resetUrl);
       } catch (emailError) {
-        console.error('Failed to send reset email:', emailError.message);
+        logger.error({ err: emailError, email: user.email }, 'Failed to send reset email');
         user.passwordResetToken = undefined;
         user.passwordResetExpires = undefined;
         await user.save();

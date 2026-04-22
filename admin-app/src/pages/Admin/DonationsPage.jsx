@@ -31,7 +31,15 @@ export default function DonationsPage() {
   return (
     <AdminLayout>
       <div className="admin-page">
-        <h1>Donations Management</h1>
+        <div className="page-header">
+          <div className="page-title-copy">
+            <span className="page-eyebrow">Financial flow</span>
+            <h1>Donations Management</h1>
+            <p className="page-description">
+              Review donor submissions, filter approval states, and track incoming support.
+            </p>
+          </div>
+        </div>
         {error && <div className="error-message">{error}</div>}
 
         <div className="filters">
@@ -43,30 +51,32 @@ export default function DonationsPage() {
           </select>
         </div>
 
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Donor</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {donations.length > 0 ? donations.map(d => (
-              <tr key={d._id}>
-                <td>{d.donor_id?.name || 'Unknown'}</td>
-                <td>{d.type}</td>
-                <td>{d.amount}</td>
-                <td><span className={`badge badge-${d.status}`}>{d.status}</span></td>
-                <td>{new Date(d.createdAt).toLocaleDateString()}</td>
+        <div className="table-shell">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Donor</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
               </tr>
-            )) : (
-              <tr><td colSpan="5">No donations found</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {donations.length > 0 ? donations.map(d => (
+                <tr key={d._id}>
+                  <td>{d.donor_id?.name || 'Unknown'}</td>
+                  <td>{d.type}</td>
+                  <td>{d.amount}</td>
+                  <td><span className={`badge badge-${d.status}`}>{d.status}</span></td>
+                  <td>{new Date(d.createdAt).toLocaleDateString()}</td>
+                </tr>
+              )) : (
+                <tr><td colSpan="5">No donations found</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </AdminLayout>
   );

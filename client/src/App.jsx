@@ -31,7 +31,7 @@ import QRPaymentPage from './pages/QR/QRPaymentPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 
-import './App.css';
+import './styles/client-shell.css';
 
 /**
  * Main App Component with Complete Routing Setup
@@ -58,6 +58,7 @@ function App() {
               {/* PUBLIC ROUTES - Accessible without auth     */}
               {/* ============================================ */}
               <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<HomePage />} />
               <Route path="/password-reset" element={<PasswordResetPage />} />
               <Route path="/reset-password/:token" element={<PasswordResetPage />} />
 

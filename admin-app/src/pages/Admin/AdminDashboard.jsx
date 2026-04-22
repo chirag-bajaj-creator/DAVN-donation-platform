@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import { adminService, getAdminSocket } from '../../services/adminService';
 import AdminLayout from '../../components/layout/AdminLayout';
 import Loading from '../../components/Common/Loading';
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,14 +36,10 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       setError('');
-      console.log('📊 Fetching admin stats...');
       const res = await adminService.getStats();
-      console.log('✅ Stats fetched:', res);
       setStats(res.data || res);
     } catch (err) {
-      console.error('❌ Error fetching stats:', err);
       setError(err.message || 'Failed to load dashboard data');
-      // Set default stats to show something
       setStats({
         totalUsers: 0,
         totalDonations: 0,
@@ -60,42 +52,23 @@ export default function AdminDashboard() {
     }
   };
 
-  console.log('🔍 AdminDashboard render - loading:', loading, 'stats:', stats);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/');
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  };
-
   if (loading) return <AdminLayout><Loading /></AdminLayout>;
 
   return (
     <AdminLayout>
       <div className="admin-dashboard">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h1>✅ Admin Dashboard Loaded</h1>
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#dc2626',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '600'
-            }}
-          >
-            🚪 Logout
-          </button>
+        <div className="page-header">
+          <div className="page-title-copy">
+            <span className="page-eyebrow">Command overview</span>
+            <h1>Admin Dashboard</h1>
+            <p className="page-description">
+              Live operational snapshot for approvals, donor flow, volunteer coverage, and needy verification.
+            </p>
+          </div>
         </div>
         {error && (
           <div className="error-message">
-            ⚠️ {error}
+            {error}
             <br />
             <small>Backend may not be running. Showing placeholder data.</small>
           </div>

@@ -2,14 +2,12 @@ require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
 const http = require('http');
-const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 
-// Import routes
 const authRoutes = require('./routes/auth');
 const donationRoutes = require('./routes/donations');
 const neededRoutes = require('./routes/needy');
@@ -19,10 +17,12 @@ const uploadRoutes = require('./routes/uploads');
 const volunteerRoutes = require('./routes/volunteer');
 const adminRoutes = require('./routes/admin');
 
-// Import middleware
 const errorHandler = require('./middleware/errorHandler');
 const authenticate = require('./middleware/authenticate');
 const { setSocketServer } = require('./services/socketService');
+const connectDB = require('./config/database');
+const { validateEnv } = require('./config/env');
+const { logger, httpLogger } = require('./config/logger');
 
 const app = express();
 const server = http.createServer(app);
@@ -35,27 +35,25 @@ const allowedOrigins = [
   'https://davn-donation-platform-ac79.vercel.app'
 ].map((origin) => origin.replace(/\/$/, ''));
 
-// Security middleware
 app.use(helmet());
 app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
+app.use(httpLogger);
 
-// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP'
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5, // 5 login attempts
+  max: 5,
   message: 'Too many login attempts, please try again later'
 });
 
@@ -106,7 +104,6 @@ io.on('connection', (socket) => {
 
 setSocketServer(io);
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/donations', authenticate, donationRoutes);
 app.use('/api/needy', neededRoutes);
@@ -116,17 +113,18 @@ app.use('/api/uploads', authenticate, uploadRoutes);
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date() });
+  res.json({
+    status: 'OK',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date()
+  });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
-  errorHandler(err, req, res);
+  errorHandler(err, req, res, next);
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -135,24 +133,34 @@ app.use((req, res) => {
   });
 });
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('✓ Connected to MongoDB');
-  })
-  .catch(err => {
-    console.error('✗ MongoDB connection error:', err.message);
-    process.exit(1);
-  });
-
-// Start server
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+process.on('unhandledRejection', (reason) => {
+  logger.fatal({ err: reason }, 'Unhandled promise rejection');
+  process.exit(1);
 });
+
+process.on('uncaughtException', (error) => {
+  logger.fatal({ err: error }, 'Uncaught exception');
+  process.exit(1);
+});
+
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+  try {
+    validateEnv();
+    logger.info({ environment: process.env.NODE_ENV || 'development' }, 'Starting backend server');
+    await connectDB();
+
+    server.listen(PORT, () => {
+      logger.info({ port: PORT }, 'Server started');
+      logger.info({ environment: process.env.NODE_ENV || 'development' }, 'Current environment');
+    });
+  } catch (error) {
+    logger.fatal({ err: error }, 'Backend startup failed');
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app;

@@ -1,9 +1,39 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/Common/LoginModal';
+import '../../styles/landing.css';
+
+const clientStats = [
+  { value: 'Verified', label: 'needy profiles' },
+  { value: 'Secure', label: 'donation flow' },
+  { value: 'Direct', label: 'community support' }
+];
+
+const pathways = [
+  {
+    title: 'For donors',
+    copy: 'Browse verified people and organizations, choose a cause, and contribute through a guided payment flow.'
+  },
+  {
+    title: 'For needy users',
+    copy: 'Create a profile, submit required details, and move through volunteer-backed verification.'
+  },
+  {
+    title: 'For transparency',
+    copy: 'Verification reports and admin oversight help keep support focused on genuine needs.'
+  }
+];
+
+const givingSteps = [
+  'Create or sign in to your account',
+  'Choose donation or needy registration',
+  'Follow verified profiles and payment steps',
+  'Track impact through your dashboard'
+];
 
 export default function HomePage() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const location = useLocation();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(location.pathname === '/login');
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 
@@ -15,85 +45,136 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (location.pathname === '/login') {
+      setIsLoginModalOpen(true);
+    }
+  }, [location.pathname]);
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
-      {/* Navigation */}
-      <nav style={{
-        position: 'fixed',
-        width: '100%',
-        top: 0,
-        zIndex: 40,
-        transition: 'all 0.3s',
-        backgroundColor: isScrolled ? '#fff' : 'transparent',
-        boxShadow: isScrolled ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-        borderBottom: isScrolled ? '1px solid #e5e7eb' : 'none'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', backgroundImage: 'linear-gradient(135deg, #0ea5e9, #a855f7)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+    <div className="landing-page client-landing">
+      <nav className={`landing-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="landing-nav-inner">
+          <div className="landing-brand">
+            <span className="landing-brand-mark">C</span>
             Community Platform
           </div>
-          <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}>
+          <button className="landing-nav-button" onClick={() => setIsLoginModalOpen(true)}>
             Sign In
           </button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ paddingTop: '128px', paddingBottom: '80px', background: 'linear-gradient(to bottom, #0284c7, #0ea5e9, #a855f7)', color: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px', lineHeight: '1.2' }}>Making Charitable Giving Simple and Transparent</h1>
-          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>A simple platform connecting generous donors with verified needy individuals and organizations, making every contribution count.</p>
-          <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#fff', color: '#0284c7', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
-            Sign In / Register
-          </button>
-        </div>
-      </section>
+      <main>
+        <section className="landing-hero">
+          <div className="landing-orb landing-orb-one" />
+          <div className="landing-orb landing-orb-two" />
 
-      {/* Steps */}
-      <section style={{ padding: '80px 16px', backgroundColor: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '36px', fontWeight: 'bold', textAlign: 'center', marginBottom: '64px' }}>How It Works</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#0284c7', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 16px' }}>1</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Create Account</h3>
-              <p style={{ color: '#6b7280' }}>Sign up in just a few steps with unified login for donors and needy.</p>
+          <div className="landing-shell hero-grid">
+            <div className="hero-copy">
+              <span className="eyebrow">Transparent giving platform</span>
+              <h1>Give with confidence to people and organizations that have been verified.</h1>
+              <p>
+                A modern community platform connecting donors with verified needy individuals and organizations through clear registration, review, and donation flows.
+              </p>
+
+              <div className="hero-actions">
+                <button className="primary-cta" onClick={() => setIsLoginModalOpen(true)}>
+                  Sign In / Register
+                </button>
+                <button className="secondary-cta" onClick={() => navigate('/dashboard')}>
+                  Explore Dashboard
+                </button>
+              </div>
+
+              <div className="metric-strip">
+                {clientStats.map((stat) => (
+                  <div className="metric-card" key={stat.label}>
+                    <strong>{stat.value}</strong>
+                    <span>{stat.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#0284c7', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 16px' }}>2</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Browse & Choose</h3>
-              <p style={{ color: '#6b7280' }}>Explore verified profiles and choose who to support.</p>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#0284c7', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 16px' }}>3</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Make Impact</h3>
-              <p style={{ color: '#6b7280' }}>Donate securely and track your contribution directly.</p>
+
+            <div className="hero-visual glass-panel donation-card">
+              <div className="visual-header">
+                <span>Impact Preview</span>
+                <strong>Rs</strong>
+              </div>
+              <div className="cause-card">
+                <span>Verified profile</span>
+                <h3>Family support request</h3>
+                <p>Documents reviewed, field verification pending admin decision.</p>
+              </div>
+              <div className="donation-meter">
+                <div>
+                  <span>Support progress</span>
+                  <strong>68%</strong>
+                </div>
+                <i />
+              </div>
+              <div className="quick-actions">
+                <span>Donate</span>
+                <span>Register need</span>
+                <span>Track</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section style={{ padding: '64px 16px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>Ready to Make a Difference?</h2>
-          <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '32px' }}>Join thousands of donors helping verified needy individuals.</p>
-          <button onClick={() => setIsLoginModalOpen(true)} style={{ backgroundColor: '#0284c7', color: '#fff', padding: '12px 32px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }}>
-            Get Started Today
-          </button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer style={{ backgroundColor: '#111827', color: '#9ca3af', padding: '48px 16px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ borderTop: '1px solid #374151', paddingTop: '32px', textAlign: 'center', fontSize: '14px' }}>
-            <p>&copy; 2024 Community Platform. All rights reserved.</p>
+        <section className="landing-section" id="pathways">
+          <div className="landing-shell section-heading">
+            <span className="eyebrow">One platform, two journeys</span>
+            <h2>Built for people who want to help and people who need help.</h2>
+            <p>Clear pathways reduce confusion while verification keeps the platform accountable.</p>
           </div>
-        </div>
+
+          <div className="landing-shell pathway-grid">
+            {pathways.map((pathway) => (
+              <article className="glass-panel pathway-card" key={pathway.title}>
+                <h3>{pathway.title}</h3>
+                <p>{pathway.copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section split-section">
+          <div className="landing-shell split-grid">
+            <div className="glass-panel insight-card">
+              <span className="eyebrow">Giving journey</span>
+              <h2>Every action has a clear next step.</h2>
+              <p>
+                Donors, needy users, volunteers, and admins each have a defined role, so support can move from request to verification to contribution.
+              </p>
+            </div>
+            <div className="journey-list">
+              {givingSteps.map((step, index) => (
+                <div className="journey-step" key={step}>
+                  <span>0{index + 1}</span>
+                  <p>{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-final">
+          <div className="landing-shell glass-panel final-card">
+            <h2>Start with a verified giving experience.</h2>
+            <p>Sign in or create an account to donate, register a need, or view your dashboard.</p>
+            <button className="primary-cta" onClick={() => setIsLoginModalOpen(true)}>
+              Get Started Today
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="landing-footer">
+        <p>&copy; 2024 Community Platform. All rights reserved.</p>
       </footer>
 
-      {/* Login Modal */}
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
