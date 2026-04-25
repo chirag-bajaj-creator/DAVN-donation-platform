@@ -1,5 +1,15 @@
 const Joi = require('joi');
 
+const geoLocationSchema = Joi.object({
+  lat: Joi.number().min(-90).max(90).optional(),
+  lng: Joi.number().min(-180).max(180).optional(),
+  latitude: Joi.number().min(-90).max(90).optional(),
+  longitude: Joi.number().min(-180).max(180).optional(),
+  accuracy: Joi.number().min(0).optional(),
+  source: Joi.string().optional(),
+  capturedAt: Joi.date().optional()
+}).optional();
+
 const registerIndividualSchema = Joi.object({
   name: Joi.string()
     .min(2)
@@ -23,10 +33,11 @@ const registerIndividualSchema = Joi.object({
     street: Joi.string().optional(),
     city: Joi.string().required(),
     state: Joi.string().optional(),
-    zipCode: Joi.string().optional()
+    zipCode: Joi.string().optional(),
+    geoLocation: geoLocationSchema
   }).required(),
   type_of_need: Joi.string()
-    .valid('food', 'shelter', 'medical', 'basic_needs', 'education', 'employment')
+    .valid('food', 'shelter', 'medical', 'basic_needs', 'education', 'employment', 'disaster_relief')
     .required(),
   urgency: Joi.string()
     .valid('low', 'medium', 'high', 'critical')
@@ -66,7 +77,8 @@ const registerOrganizationSchema = Joi.object({
     street: Joi.string().optional(),
     city: Joi.string().required(),
     state: Joi.string().optional(),
-    zipCode: Joi.string().optional()
+    zipCode: Joi.string().optional(),
+    geoLocation: geoLocationSchema
   }).required(),
   contactPerson: Joi.object({
     name: Joi.string().optional(),

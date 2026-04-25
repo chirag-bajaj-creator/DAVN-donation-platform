@@ -25,7 +25,72 @@ const verificationReportSchema = new mongoose.Schema({
     addressVerified: { type: Boolean, default: false },
     identityVerified: { type: Boolean, default: false },
     comments: String,
-    issues: [String]
+    issues: [String],
+    description: String,
+    findings: String,
+    recommendations: String,
+    aidOutcome: {
+      type: String,
+      enum: ['completed', 'partial', 'failed']
+    },
+    recipientAcknowledgment: {
+      type: String,
+      enum: ['confirmed', 'proxy_confirmed', 'not_available', 'refused']
+    },
+    qualitySafetyNotes: String,
+    issueFlags: [String],
+    followUpRecommendation: {
+      type: String,
+      enum: ['none', 'second_visit', 'more_aid_required', 'urgent_escalation', 'recipient_details_update']
+    },
+    verificationStatus: String,
+    photoName: String,
+    proofMetadata: {
+      type: {
+        type: String,
+        enum: ['photo', 'signature', 'document', 'witness_note']
+      },
+      reference: String,
+      capturedAt: Date,
+      fileName: String,
+      fileType: String,
+      fileSize: Number
+    },
+    visitedAt: Date,
+    beneficiaryPresent: Boolean,
+    contactVerified: Boolean,
+    familyMembersCount: Number,
+    observedNeed: String,
+    urgencyObserved: {
+      type: String,
+      enum: ['low', 'medium', 'high', 'critical']
+    },
+    aidRecommended: [String],
+    followUpRequired: Boolean,
+    followUpNotes: String,
+    disasterImpactVerified: Boolean,
+    distributionNotes: String,
+    photos: [
+      {
+        url: String,
+        publicId: String,
+        caption: String,
+        capturedAt: Date
+      }
+    ],
+    documents: [
+      {
+        type: String,
+        url: String,
+        publicId: String,
+        notes: String
+      }
+    ],
+    location: {
+      address: String,
+      latitude: Number,
+      longitude: Number
+    }
   },
   trustScore: {
     type: Number,

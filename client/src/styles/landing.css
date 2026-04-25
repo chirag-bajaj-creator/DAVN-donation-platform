@@ -1,19 +1,21 @@
 .landing-page {
-  --landing-bg: #211016;
+  --landing-bg: #19091f;
   --landing-surface: rgba(255, 255, 255, 0.13);
   --landing-border: rgba(255, 255, 255, 0.22);
   --landing-text: #fffaf7;
   --landing-muted: rgba(255, 250, 247, 0.74);
-  --landing-primary: #fb7185;
+  --landing-primary: #ec4899;
   --landing-secondary: #f97316;
-  --landing-accent: #fde68a;
+  --landing-accent: #fde047;
+  --landing-cyan: #22d3ee;
   min-height: 100vh;
   overflow-x: hidden;
   color: var(--landing-text);
   background:
-    radial-gradient(circle at 15% 15%, rgba(251, 113, 133, 0.3), transparent 30rem),
-    radial-gradient(circle at 84% 10%, rgba(249, 115, 22, 0.22), transparent 25rem),
-    linear-gradient(135deg, #211016 0%, #3a1718 48%, #1b1116 100%);
+    radial-gradient(circle at 15% 15%, rgba(236, 72, 153, 0.34), transparent 30rem),
+    radial-gradient(circle at 84% 10%, rgba(34, 211, 238, 0.24), transparent 25rem),
+    radial-gradient(circle at 70% 86%, rgba(253, 224, 71, 0.12), transparent 24rem),
+    linear-gradient(135deg, #19091f 0%, #3a1230 46%, #111827 100%);
 }
 
 .landing-page * {
@@ -326,6 +328,35 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.festival-card {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(236, 72, 153, 0.22), transparent 14rem),
+    radial-gradient(circle at 82% 16%, rgba(34, 211, 238, 0.18), transparent 12rem),
+    var(--landing-surface);
+}
+
+.landing-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  color: #17071d;
+  background: linear-gradient(135deg, var(--landing-accent), #ffffff);
+  box-shadow: 0 14px 34px rgba(253, 224, 71, 0.22);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.landing-icon.is-large {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 16px;
+  border-radius: 20px;
+  font-size: 18px;
+}
+
 .landing-section {
   padding: 92px 0;
 }
@@ -359,6 +390,25 @@
   color: #ffffff;
   font-size: 26px;
   letter-spacing: -0.04em;
+}
+
+.aid-lane-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.aid-lane-card {
+  min-height: 290px;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(34, 211, 238, 0.12), transparent 9rem),
+    rgba(255, 255, 255, 0.11);
+}
+
+.aid-lane-card h3 {
+  margin-top: 36px;
+}
+
+.proof-cta {
+  margin-top: 22px;
 }
 
 .split-section {

@@ -43,6 +43,11 @@ export default function HomePage() {
     setIsAuthOpen(true);
   };
 
+  const handleLoginSuccess = () => {
+    setIsAuthOpen(false);
+    navigate('/dashboard');
+  };
+
   useEffect(() => {
     if (isAuthenticated && !loading && user && user.role !== 'volunteer') {
       logout();
@@ -188,7 +193,12 @@ export default function HomePage() {
         </section>
       </main>
 
-      <LoginModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} initialMode={authMode} />
+      <LoginModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        initialMode={authMode}
+      />
 
       <footer className="landing-footer">
         <p>&copy; 2024 Volunteer Network. All rights reserved.</p>

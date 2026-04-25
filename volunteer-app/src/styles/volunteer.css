@@ -196,12 +196,41 @@
   line-height: 1.7;
 }
 
+.volunteer-live-tracking {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(6, 30, 24, 0.58);
+  color: rgba(239, 253, 246, 0.8);
+}
+
+.volunteer-live-tracking span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.volunteer-live-tracking strong {
+  color: #f8fafc;
+  font-size: 0.9rem;
+}
+
+.volunteer-live-tracking.is-on {
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.16);
+}
+
 .volunteer-stats-grid,
 .volunteer-action-grid,
 .volunteer-choice-grid,
 .volunteer-task-list,
 .volunteer-meta-grid,
-.volunteer-form-grid {
+.volunteer-form-grid,
+.volunteer-field-context {
   display: grid;
   gap: 16px;
 }
@@ -350,7 +379,8 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.volunteer-meta-item {
+.volunteer-meta-item,
+.volunteer-context-item {
   display: grid;
   gap: 6px;
   padding: 16px;
@@ -358,9 +388,59 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.volunteer-field-context {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.volunteer-context-item {
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.volunteer-field-icon,
+.volunteer-report-icon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(124, 245, 200, 0.12);
+  color: #7cf5c8;
+  font-size: 12px;
+  font-weight: 900;
+  flex: 0 0 auto;
+}
+
+.volunteer-context-item span,
+.volunteer-field-brief span {
+  color: rgba(238, 252, 246, 0.7);
+  font-size: 13px;
+}
+
 .volunteer-meta-item strong,
+.volunteer-context-item strong,
 .volunteer-task-title {
   color: #ffffff;
+}
+
+.volunteer-context-item strong {
+  text-transform: capitalize;
+}
+
+.volunteer-field-brief {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(52, 211, 153, 0.16);
+  border-radius: 20px;
+  background: rgba(52, 211, 153, 0.07);
+}
+
+.volunteer-field-brief div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .volunteer-task-actions {
@@ -422,11 +502,83 @@
 }
 
 .volunteer-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 14px 16px;
   border-radius: 18px;
   border: 1px solid rgba(251, 191, 36, 0.3);
   background: rgba(251, 191, 36, 0.08);
   color: #fde68a;
+}
+
+.volunteer-alert.is-muted {
+  border-color: rgba(52, 211, 153, 0.22);
+  background: rgba(52, 211, 153, 0.08);
+  color: rgba(238, 252, 246, 0.82);
+}
+
+.volunteer-report-section {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.volunteer-report-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.volunteer-report-heading h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.volunteer-report-heading p {
+  margin: 4px 0 0;
+  color: rgba(238, 252, 246, 0.7);
+  line-height: 1.5;
+}
+
+.volunteer-fieldset {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.volunteer-fieldset legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.volunteer-fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: rgba(238, 252, 246, 0.84);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.volunteer-fieldset input {
+  width: 18px;
+  height: 18px;
+  accent-color: #34d399;
 }
 
 .volunteer-label {
@@ -676,7 +828,9 @@
   .volunteer-task-list,
   .volunteer-choice-grid,
   .volunteer-form-grid,
-  .volunteer-meta-grid {
+  .volunteer-meta-grid,
+  .volunteer-field-context,
+  .volunteer-fieldset {
     grid-template-columns: 1fr;
   }
 

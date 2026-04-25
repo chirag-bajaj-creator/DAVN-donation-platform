@@ -11,6 +11,8 @@ export default function NeedyPage() {
   const [error, setError] = useState('');
   const [assignModal, setAssignModal] = useState(null);
   const [selectedVolunteer, setSelectedVolunteer] = useState('');
+  const [nearestVolunteers, setNearestVolunteers] = useState([]);
+  const [nearestError, setNearestError] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -52,16 +54,31 @@ export default function NeedyPage() {
     }
   };
 
-  const handleAssign = async (needyId) => {
+  const openAssignModal = async (needyCase) => {
+    setAssignModal(needyCase);
+    setSelectedVolunteer('');
+    setNearestVolunteers([]);
+    setNearestError('');
+
+    try {
+      const res = await adminService.getNearestVolunteers(needyCase._id);
+      setNearestVolunteers(res.data.volunteers || []);
+    } catch (err) {
+      setNearestError(err.message);
+    }
+  };
+
+  const handleAssign = async () => {
     if (!selectedVolunteer) {
       alert('Please select a volunteer');
       return;
     }
     try {
-      await adminService.assignVolunteerToNeedy(needyId, selectedVolunteer);
-      setNeedy(needy.filter(n => n._id !== needyId));
+      await adminService.assignVolunteerToNeedy(assignModal._id, selectedVolunteer);
+      setNeedy(needy.filter(n => n._id !== assignModal._id));
       setAssignModal(null);
       setSelectedVolunteer('');
+      setNearestVolunteers([]);
       alert('Volunteer assigned successfully');
     } catch (err) {
       setError(err.message);
@@ -119,7 +136,7 @@ export default function NeedyPage() {
                   <td>{n.phone}</td>
                   <td>{new Date(n.createdAt).toLocaleDateString()}</td>
                   <td>
-                    <button className="btn-small btn-assign" onClick={() => setAssignModal(n._id)}>
+                    <button className="btn-small btn-assign" onClick={() => openAssignModal(n)}>
                       Assign Volunteer
                     </button>
                   </td>
@@ -173,6 +190,26 @@ export default function NeedyPage() {
           <div className="modal-overlay">
             <div className="modal">
               <h2>Assign Volunteer</h2>
+              <p className="modal-copy">
+                {nearestVolunteers.length > 0
+                  ? 'Nearest volunteers are sorted by live GPS distance.'
+                  : nearestError || 'No live volunteer GPS is available yet. Showing all volunteers.'}
+              </p>
+              {nearestVolunteers.length > 0 && (
+                <div className="nearest-volunteer-list">
+                  {nearestVolunteers.map(v => (
+                    <button
+                      key={v._id}
+                      type="button"
+                      className={`nearest-volunteer-option ${selectedVolunteer === v._id ? 'is-selected' : ''}`}
+                      onClick={() => setSelectedVolunteer(v._id)}
+                    >
+                      <span>{v.user_id?.name || v.user_id?.email || 'Volunteer'}</span>
+                      <strong>{v.distanceKm !== null ? `${v.distanceKm} km away` : 'Distance pending'}</strong>
+                    </button>
+                  ))}
+                </div>
+              )}
               <select
                 value={selectedVolunteer}
                 onChange={(e) => setSelectedVolunteer(e.target.value)}
@@ -184,7 +221,7 @@ export default function NeedyPage() {
                 ))}
               </select>
               <div className="modal-actions">
-                <button className="btn-primary" onClick={() => handleAssign(assignModal)}>Assign</button>
+                <button className="btn-primary" onClick={handleAssign}>Assign</button>
                 <button className="btn-secondary" onClick={() => setAssignModal(null)}>Cancel</button>
               </div>
             </div>

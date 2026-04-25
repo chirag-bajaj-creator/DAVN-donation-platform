@@ -55,6 +55,9 @@ export default function Navbar() {
               <Link to="/needy" className={navLinkClass('/needy')}>
                 Need Help?
               </Link>
+              <Link to="/tracking" className={navLinkClass('/tracking')}>
+                Track Aid
+              </Link>
               {user?.role === 'needy' && (
                 <Link to="/needy/individual" className={navLinkClass('/needy/individual')}>
                   My Profile
@@ -116,6 +119,9 @@ export default function Navbar() {
             </Link>
             <Link to="/needy" className={navLinkClass('/needy')} onClick={() => setIsMenuOpen(false)}>
               Need Help?
+            </Link>
+            <Link to="/tracking" className={navLinkClass('/tracking')} onClick={() => setIsMenuOpen(false)}>
+              Track Aid
             </Link>
             {user?.role === 'needy' && (
               <Link

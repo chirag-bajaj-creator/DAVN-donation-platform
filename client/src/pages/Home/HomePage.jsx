@@ -1,46 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/Common/LoginModal';
 import '../../styles/landing.css';
 
-const clientStats = [
-  { value: 'Verified', label: 'needy profiles' },
-  { value: 'Secure', label: 'donation flow' },
-  { value: 'Direct', label: 'community support' }
-];
-
-const pathways = [
+const aidLanes = [
   {
-    title: 'For donors',
-    copy: 'Browse verified people and organizations, choose a cause, and contribute through a guided payment flow.'
+    title: 'Surplus food rescue',
+    copy: 'Capture safe pickup windows, serving counts, packaging, and storage details before food is routed.',
+    icon: 'F',
   },
   {
-    title: 'For needy users',
-    copy: 'Create a profile, submit required details, and move through volunteer-backed verification.'
+    title: 'Clothes & basic needs',
+    copy: 'List sorted clothes, blankets, hygiene kits, school items, sizes, condition, and packed-readiness.',
+    icon: 'B',
   },
   {
-    title: 'For transparency',
-    copy: 'Verification reports and admin oversight help keep support focused on genuine needs.'
-  }
+    title: 'Emergency relief',
+    copy: 'Flag floods, fires, heatwaves, and urgent local needs with priority, affected location, and required-by time.',
+    icon: 'R',
+  },
+  {
+    title: 'Verified cash',
+    copy: 'Route money through documented requests, references, proof uploads, and admin-visible review steps.',
+    icon: 'C',
+  },
 ];
 
-const givingSteps = [
-  'Create or sign in to your account',
-  'Choose donation or needy registration',
-  'Follow verified profiles and payment steps',
-  'Track impact through your dashboard'
+const proofSteps = [
+  'Donor submits operational details',
+  'Photo, bill, inventory, or transaction proof is attached',
+  'Volunteer checks location and condition',
+  'Admin approves routing and impact follow-up',
 ];
 
 export default function HomePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(location.pathname === '/login');
   const [isScrolled, setIsScrolled] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -59,7 +59,7 @@ export default function HomePage() {
             <span className="landing-brand-mark">C</span>
             Community Platform
           </div>
-          <button className="landing-nav-button" onClick={() => setIsLoginModalOpen(true)}>
+          <button className="landing-nav-button" type="button" onClick={() => setIsLoginModalOpen(true)}>
             Sign In
           </button>
         </div>
@@ -72,69 +72,72 @@ export default function HomePage() {
 
           <div className="landing-shell hero-grid">
             <div className="hero-copy">
-              <span className="eyebrow">Transparent giving platform</span>
-              <h1>Give with confidence to people and organizations that have been verified.</h1>
+              <span className="eyebrow">Festival-impact aid operations</span>
+              <h1>Turn festive giving into verified food, relief, clothes, and cash support.</h1>
               <p>
-                A modern community platform connecting donors with verified needy individuals and organizations through clear registration, review, and donation flows.
+                A bright, proof-first donation flow for real-world aid: pickup-ready surplus food,
+                sorted basic needs, urgent relief, and verified cash requests.
               </p>
 
               <div className="hero-actions">
-                <button className="primary-cta" onClick={() => setIsLoginModalOpen(true)}>
+                <button className="primary-cta" type="button" onClick={() => setIsLoginModalOpen(true)}>
                   Sign In / Register
+                  <span aria-hidden="true">-&gt;</span>
                 </button>
-                <button className="secondary-cta" onClick={() => navigate('/dashboard')}>
-                  Explore Dashboard
+                <button className="secondary-cta" type="button" onClick={() => navigate('/donation')}>
+                  Start a Donation
                 </button>
               </div>
 
               <div className="metric-strip">
-                {clientStats.map((stat) => (
-                  <div className="metric-card" key={stat.label}>
-                    <strong>{stat.value}</strong>
-                    <span>{stat.label}</span>
+                {['Pickup details', 'Proof uploads', 'Volunteer checks'].map((label) => (
+                  <div className="metric-card" key={label}>
+                    <strong>{label.split(' ')[0]}</strong>
+                    <span>{label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="hero-visual glass-panel donation-card">
+            <div className="hero-visual glass-panel donation-card festival-card">
               <div className="visual-header">
-                <span>Impact Preview</span>
-                <strong>Rs</strong>
+                <span>Live Aid Packet</span>
+                <span className="landing-icon" aria-hidden="true">V</span>
               </div>
               <div className="cause-card">
-                <span>Verified profile</span>
-                <h3>Family support request</h3>
-                <p>Documents reviewed, field verification pending admin decision.</p>
+                <span>Surplus food + blankets</span>
+                <h3>Ready for volunteer pickup before 8:30 PM</h3>
+                <p>Photo proof attached, quantity listed, location verified after submission.</p>
               </div>
               <div className="donation-meter">
                 <div>
-                  <span>Support progress</span>
-                  <strong>68%</strong>
+                  <span>Proof readiness</span>
+                  <strong>4/4</strong>
                 </div>
                 <i />
               </div>
               <div className="quick-actions">
-                <span>Donate</span>
-                <span>Register need</span>
-                <span>Track</span>
+                <span>Food</span>
+                <span>Basics</span>
+                <span>Relief</span>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="landing-section" id="pathways">
+        <section className="landing-section" id="aid-lanes">
           <div className="landing-shell section-heading">
-            <span className="eyebrow">One platform, two journeys</span>
-            <h2>Built for people who want to help and people who need help.</h2>
-            <p>Clear pathways reduce confusion while verification keeps the platform accountable.</p>
+            <span className="eyebrow">Aid lanes</span>
+            <h2>Designed for what donors can actually give today.</h2>
+            <p>Each lane collects the details needed to reduce back-and-forth and improve verification.</p>
           </div>
 
-          <div className="landing-shell pathway-grid">
-            {pathways.map((pathway) => (
-              <article className="glass-panel pathway-card" key={pathway.title}>
-                <h3>{pathway.title}</h3>
-                <p>{pathway.copy}</p>
+          <div className="landing-shell pathway-grid aid-lane-grid">
+            {aidLanes.map(({ title, copy, icon }) => (
+              <article className="glass-panel pathway-card aid-lane-card" key={title}>
+                <span className="landing-icon" aria-hidden="true">{icon}</span>
+                <h3>{title}</h3>
+                <p>{copy}</p>
               </article>
             ))}
           </div>
@@ -143,14 +146,17 @@ export default function HomePage() {
         <section className="landing-section split-section">
           <div className="landing-shell split-grid">
             <div className="glass-panel insight-card">
-              <span className="eyebrow">Giving journey</span>
-              <h2>Every action has a clear next step.</h2>
+              <span className="eyebrow">Proof flow</span>
+              <h2>Impact is easier to trust when the proof path is visible.</h2>
               <p>
-                Donors, needy users, volunteers, and admins each have a defined role, so support can move from request to verification to contribution.
+                Donors submit useful evidence, volunteers validate the field reality, and admins keep final routing accountable.
               </p>
+              <button className="secondary-cta proof-cta" type="button" onClick={() => navigate('/needy')}>
+                Request Help
+              </button>
             </div>
             <div className="journey-list">
-              {givingSteps.map((step, index) => (
+              {proofSteps.map((step, index) => (
                 <div className="journey-step" key={step}>
                   <span>0{index + 1}</span>
                   <p>{step}</p>
@@ -162,9 +168,10 @@ export default function HomePage() {
 
         <section className="landing-final">
           <div className="landing-shell glass-panel final-card">
-            <h2>Start with a verified giving experience.</h2>
-            <p>Sign in or create an account to donate, register a need, or view your dashboard.</p>
-            <button className="primary-cta" onClick={() => setIsLoginModalOpen(true)}>
+            <span className="landing-icon is-large" aria-hidden="true">H</span>
+            <h2>Give with operational clarity, not guesswork.</h2>
+            <p>Sign in to submit a donation, register a need, or track your verified aid activity.</p>
+            <button className="primary-cta" type="button" onClick={() => setIsLoginModalOpen(true)}>
               Get Started Today
             </button>
           </div>
@@ -172,7 +179,7 @@ export default function HomePage() {
       </main>
 
       <footer className="landing-footer">
-        <p>&copy; 2024 Community Platform. All rights reserved.</p>
+        <p>&copy; 2026 Community Platform. All rights reserved.</p>
       </footer>
 
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />

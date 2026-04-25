@@ -76,6 +76,28 @@ router.get(
 );
 
 /**
+ * GET /api/volunteers/cases/:caseId/nearest
+ * Find nearby volunteers for a case with GPS coordinates
+ */
+router.get(
+  '/cases/:caseId/nearest',
+  authenticate,
+  authorize(['admin']),
+  volunteerController.getNearestVolunteers
+);
+
+/**
+ * POST /api/volunteers/location
+ * Update current volunteer browser GPS location
+ */
+router.post(
+  '/location',
+  authenticate,
+  authorize(['volunteer']),
+  volunteerController.updateLocation
+);
+
+/**
  * POST /api/volunteers/cases/:caseId/report
  * Submit a verification report for a case
  */

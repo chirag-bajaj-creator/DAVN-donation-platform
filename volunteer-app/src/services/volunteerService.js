@@ -97,6 +97,11 @@ const volunteerService = {
   rejectCase: (caseId) => {
     return apiClient.post(`/volunteers/cases/${caseId}/reject`);
   },
+
+  // Update live GPS location for accepted/in-route assigned cases
+  updateLocation: (locationData) => {
+    return apiClient.post('/volunteers/location', locationData);
+  },
 };
 
 export default volunteerService;

@@ -1,5 +1,45 @@
 const mongoose = require('mongoose');
 
+const geoLocationSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: undefined
+    },
+    lat: Number,
+    lng: Number,
+    accuracy: Number,
+    source: String,
+    capturedAt: Date
+  },
+  { _id: false }
+);
+
+const trackingSchema = new mongoose.Schema(
+  {
+    status: {
+      type: String,
+      enum: ['not_assigned', 'assigned', 'accepted', 'in_route', 'completed', 'cancelled'],
+      default: 'not_assigned'
+    },
+    assignedVolunteer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+    acceptedAt: Date,
+    startedAt: Date,
+    completedAt: Date,
+    lastVolunteerLocation: geoLocationSchema
+  },
+  { _id: false }
+);
+
 const neededOrganizationSchema = new mongoose.Schema({
   org_name: {
     type: String,
@@ -27,7 +67,8 @@ const neededOrganizationSchema = new mongoose.Schema({
       required: [true, 'City is required']
     },
     state: String,
-    zipCode: String
+    zipCode: String,
+    geoLocation: geoLocationSchema
   },
   contactPerson: {
     name: String,
@@ -75,6 +116,15 @@ const neededOrganizationSchema = new mongoose.Schema({
     max: 100,
     default: 0
   },
+  requested_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  tracking: {
+    type: trackingSchema,
+    default: () => ({})
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -94,5 +144,6 @@ neededOrganizationSchema.index({ registration_number: 1 });
 neededOrganizationSchema.index({ status: 1 });
 neededOrganizationSchema.index({ credibilityScore: -1 });
 neededOrganizationSchema.index({ createdAt: -1 });
+neededOrganizationSchema.index({ 'address.geoLocation': '2dsphere' });
 
 module.exports = mongoose.model('NeededOrganization', neededOrganizationSchema);

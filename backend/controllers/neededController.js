@@ -1,5 +1,6 @@
 const NeededIndividual = require('../models/NeededIndividual');
 const NeededOrganization = require('../models/NeededOrganization');
+const { normalizeCoordinates } = require('../utils/geo');
 
 const neededController = {
   /**
@@ -8,6 +9,7 @@ const neededController = {
   registerIndividual: async (req, res, next) => {
     try {
       const { name, phone, email, address, type_of_need, urgency, description } = req.validatedData;
+      const geoLocation = normalizeCoordinates(address?.geoLocation);
 
       // Check if phone already registered
       const existingIndividual = await NeededIndividual.findOne({ phone });
@@ -25,10 +27,14 @@ const neededController = {
         name,
         phone,
         email,
-        address,
+        address: {
+          ...address,
+          ...(geoLocation ? { geoLocation } : {})
+        },
         type_of_need,
         urgency,
         description,
+        requested_by: req.user?.userId || null,
         status: 'pending',
         trustScore: 0
       });
@@ -66,6 +72,7 @@ const neededController = {
         urgency,
         description
       } = req.validatedData;
+      const geoLocation = normalizeCoordinates(address?.geoLocation);
 
       // Check if registration number already exists
       const existingOrg = await NeededOrganization.findOne({ registration_number });
@@ -84,11 +91,15 @@ const neededController = {
         registration_number,
         org_type,
         phone,
-        address,
+        address: {
+          ...address,
+          ...(geoLocation ? { geoLocation } : {})
+        },
         contactPerson,
         type_of_need,
         urgency,
         description,
+        requested_by: req.user?.userId || null,
         status: 'pending',
         credibilityScore: 0
       });

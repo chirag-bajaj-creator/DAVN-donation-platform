@@ -4,6 +4,8 @@ const NeededIndividual = require('../models/NeededIndividual');
 const NeededOrganization = require('../models/NeededOrganization');
 const VerificationReport = require('../models/VerificationReport');
 const { emitRealtimeUpdate } = require('../services/socketService');
+const { emitTrackingUpdate } = require('../services/trackingStreamService');
+const { normalizeCoordinates, coordinatesFromGeoLocation, haversineDistanceKm } = require('../utils/geo');
 
 function normalizeNeedyType(needyType) {
   if (needyType === 'NeededOrganization' || needyType === 'organization') {
@@ -11,6 +13,24 @@ function normalizeNeedyType(needyType) {
   }
 
   return 'NeededIndividual';
+}
+
+function formatVolunteer(volunteer, targetLocation) {
+  const location = coordinatesFromGeoLocation(volunteer.currentLocation);
+  const distanceKm = haversineDistanceKm(location, targetLocation);
+
+  return {
+    _id: volunteer._id,
+    user_id: volunteer.user_id,
+    type: volunteer.type,
+    specialization: volunteer.specialization,
+    status: volunteer.status,
+    rating: volunteer.rating,
+    tasksCompleted: volunteer.tasksCompleted,
+    currentLocation: location,
+    lastLocationAt: volunteer.lastLocationAt,
+    distanceKm: distanceKm === null ? null : Number(distanceKm.toFixed(2))
+  };
 }
 
 const volunteerController = {
@@ -362,6 +382,8 @@ const volunteerController = {
           uiStatus: c.status === 'pending' && c.verified_by?.toString() === userId ? 'accepted' : c.status,
           trustScore: c.trustScore,
           createdAt: c.createdAt,
+          tracking: c.tracking,
+          locationCoordinates: coordinatesFromGeoLocation(c.address?.geoLocation),
         })),
         ...assignedOrgs.map(c => ({
           _id: c._id,
@@ -376,6 +398,8 @@ const volunteerController = {
           uiStatus: c.status === 'pending' && c.verified_by?.toString() === userId ? 'accepted' : c.status,
           trustScore: c.trustScore,
           createdAt: c.createdAt,
+          tracking: c.tracking,
+          locationCoordinates: coordinatesFromGeoLocation(c.address?.geoLocation),
         })),
       ];
 
@@ -461,6 +485,12 @@ const volunteerController = {
       }
 
       needyCase.verified_by = userId;
+      needyCase.tracking = {
+        ...(needyCase.tracking?.toObject?.() || needyCase.tracking || {}),
+        status: 'accepted',
+        assignedVolunteer: userId,
+        acceptedAt: new Date()
+      };
       needyCase.updatedAt = new Date();
       await needyCase.save();
 
@@ -473,6 +503,7 @@ const volunteerController = {
           needyType,
           action: 'accepted',
           status: needyCase.status,
+          trackingStatus: needyCase.tracking?.status,
           updatedAt: needyCase.updatedAt
         }
       });
@@ -484,6 +515,7 @@ const volunteerController = {
           _id: needyCase._id,
           needy_type: needyType,
           status: needyCase.status,
+          tracking: needyCase.tracking,
           verified_by: needyCase.verified_by,
           updatedAt: needyCase.updatedAt
         },
@@ -523,6 +555,11 @@ const volunteerController = {
       }
 
       needyCase.verified_by = null;
+      needyCase.tracking = {
+        ...(needyCase.tracking?.toObject?.() || needyCase.tracking || {}),
+        status: 'cancelled',
+        assignedVolunteer: null
+      };
       needyCase.updatedAt = new Date();
       await needyCase.save();
 
@@ -596,6 +633,11 @@ const volunteerController = {
       needyCase.verified_by = userId;
       needyCase.status = 'verified';
       needyCase.trustScore = trustScore || 0;
+      needyCase.tracking = {
+        ...(needyCase.tracking?.toObject?.() || needyCase.tracking || {}),
+        status: 'completed',
+        completedAt: new Date()
+      };
       await needyCase.save();
 
       emitRealtimeUpdate({
@@ -684,6 +726,194 @@ const volunteerController = {
           verified_by: volunteer.verified_by,
           verifiedAt: volunteer.verifiedAt,
           reason: reason || null
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Update current volunteer GPS location and active tracking cases
+   */
+  updateLocation: async (req, res, next) => {
+    try {
+      const userId = req.user.userId;
+      const location = normalizeCoordinates(req.body);
+
+      if (!location) {
+        return res.status(422).json({
+          success: false,
+          error: 'Valid latitude and longitude are required',
+          code: 'INVALID_LOCATION'
+        });
+      }
+
+      const volunteer = await Volunteer.findOneAndUpdate(
+        { user_id: userId },
+        {
+          currentLocation: location,
+          locationSharing: true,
+          lastLocationAt: location.capturedAt,
+          updatedAt: new Date()
+        },
+        { new: true }
+      );
+
+      if (!volunteer) {
+        return res.status(404).json({
+          success: false,
+          error: 'Volunteer profile not found',
+          code: 'NOT_FOUND'
+        });
+      }
+
+      const targetFilter = {
+        verified_by: userId,
+        status: 'pending',
+        'tracking.status': { $in: ['assigned', 'accepted', 'in_route'] }
+      };
+      const trackingUpdate = {
+        'tracking.status': 'in_route',
+        'tracking.startedAt': new Date(),
+        'tracking.lastVolunteerLocation': location,
+        updatedAt: new Date()
+      };
+
+      const [activeIndividuals, activeOrganizations] = await Promise.all([
+        NeededIndividual.find(targetFilter)
+          .populate('tracking.assignedVolunteer', 'name phone email')
+          .populate('verified_by', 'name phone email'),
+        NeededOrganization.find(targetFilter)
+          .populate('tracking.assignedVolunteer', 'name phone email')
+          .populate('verified_by', 'name phone email')
+      ]);
+
+      const [individualUpdate, organizationUpdate] = await Promise.all([
+        NeededIndividual.updateMany(targetFilter, { $set: trackingUpdate }),
+        NeededOrganization.updateMany(targetFilter, { $set: trackingUpdate })
+      ]);
+
+      const locationCoordinates = coordinatesFromGeoLocation(location);
+      const emitCaseTracking = (needyCase, needyType) => {
+        const caseLocation = coordinatesFromGeoLocation(needyCase.address?.geoLocation);
+        const distanceKm = haversineDistanceKm(locationCoordinates, caseLocation);
+        const volunteerUser = needyCase.tracking?.assignedVolunteer || needyCase.verified_by;
+
+        emitTrackingUpdate(needyType, needyCase._id, {
+          case: {
+            _id: needyCase._id,
+            needyType,
+            name: needyCase.name || needyCase.org_name,
+            phone: needyCase.phone,
+            type_of_need: needyCase.type_of_need,
+            urgency: needyCase.urgency,
+            status: needyCase.status,
+            address: needyCase.address,
+            addressText: [needyCase.address?.street, needyCase.address?.city, needyCase.address?.state, needyCase.address?.zipCode]
+              .filter(Boolean)
+              .join(', '),
+            location: caseLocation
+          },
+          volunteer: volunteerUser ? {
+            _id: volunteerUser._id,
+            name: volunteerUser.name,
+            phone: volunteerUser.phone,
+            email: volunteerUser.email
+          } : null,
+          tracking: {
+            status: 'in_route',
+            acceptedAt: needyCase.tracking?.acceptedAt,
+            startedAt: trackingUpdate['tracking.startedAt'],
+            completedAt: needyCase.tracking?.completedAt,
+            lastLocationAt: location.capturedAt,
+            volunteerLocation: locationCoordinates,
+            distanceKm: distanceKm === null ? null : Number(distanceKm.toFixed(2)),
+            estimatedMinutes: distanceKm === null ? null : Math.max(1, Math.round((distanceKm / 20) * 60))
+          }
+        });
+      };
+
+      activeIndividuals.forEach((needyCase) => emitCaseTracking(needyCase, 'NeededIndividual'));
+      activeOrganizations.forEach((needyCase) => emitCaseTracking(needyCase, 'NeededOrganization'));
+
+      emitRealtimeUpdate({
+        adminEvent: 'admin:volunteer-location-updated',
+        userId,
+        userEvent: 'volunteer:location-updated',
+        payload: {
+          volunteerId: volunteer._id,
+          userId,
+          location: locationCoordinates,
+          updatedAt: location.capturedAt,
+          affectedCases: (individualUpdate.modifiedCount || 0) + (organizationUpdate.modifiedCount || 0)
+        }
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Location updated',
+        data: {
+          location: coordinatesFromGeoLocation(location),
+          updatedAt: location.capturedAt
+        },
+        timestamp: new Date()
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Find nearest active/approved volunteers for a needy case
+   */
+  getNearestVolunteers: async (req, res, next) => {
+    try {
+      const { caseId } = req.params;
+      const { needyType = 'NeededIndividual', limit = 10 } = req.query;
+      const { needyCase } = await volunteerController.findCaseById(caseId);
+
+      if (!needyCase) {
+        return res.status(404).json({
+          success: false,
+          error: 'Case not found',
+          code: 'NOT_FOUND'
+        });
+      }
+
+      const targetLocation = coordinatesFromGeoLocation(needyCase.address?.geoLocation);
+      if (!targetLocation) {
+        return res.status(422).json({
+          success: false,
+          error: 'This case does not have GPS coordinates for location matching',
+          code: 'CASE_LOCATION_MISSING'
+        });
+      }
+
+      const parsedLimit = Math.min(parseInt(limit) || 10, 25);
+      const volunteers = await Volunteer.find({
+        status: { $in: ['active', 'approved'] },
+        currentLocation: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [targetLocation.lng, targetLocation.lat]
+            },
+            $maxDistance: 50000
+          }
+        }
+      })
+        .populate('user_id', 'name email phone')
+        .limit(parsedLimit);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          caseId,
+          needyType,
+          targetLocation,
+          volunteers: volunteers.map((volunteer) => formatVolunteer(volunteer, targetLocation))
         },
         timestamp: new Date()
       });

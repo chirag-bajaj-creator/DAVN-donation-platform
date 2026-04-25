@@ -4,7 +4,7 @@ import RegisterTypePage from '../pages/RegisterTypePage';
 import SpecializedRegisterPage from '../pages/SpecializedRegisterPage';
 import UnspecializedRegisterPage from '../pages/UnspecializedRegisterPage';
 
-export default function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
+export default function LoginModal({ isOpen, onClose, onLoginSuccess, initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
     return (
       <LoginPage
         embedded
-        onSuccess={onClose}
+        onSuccess={onLoginSuccess || onClose}
         onRegister={() => setMode('register')}
       />
     );

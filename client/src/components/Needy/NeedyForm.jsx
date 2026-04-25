@@ -7,8 +7,10 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [geoLocation, setGeoLocation] = useState(null);
+  const [geoStatus, setGeoStatus] = useState('Location not shared');
 
-  const needTypes = ['food', 'shelter', 'medical', 'basic_needs', 'education', 'employment'];
+  const needTypes = ['food', 'shelter', 'medical', 'basic_needs', 'education', 'employment', 'disaster_relief'];
   const orgTypes = ['ngo', 'charity', 'trust', 'foundation', 'government', 'other'];
 
   const handleFormSubmit = async (data) => {
@@ -23,6 +25,7 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
         ...(data.street?.trim() ? { street: data.street.trim() } : {}),
         ...(data.state?.trim() ? { state: data.state.trim() } : {}),
         ...(data.zipCode?.trim() ? { zipCode: data.zipCode.trim() } : {}),
+        ...(geoLocation ? { geoLocation } : {}),
       };
 
       // Build submission data based on type
@@ -79,6 +82,35 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
     console.log('Raw form data from react-hook-form:', data);
     console.log('Type:', type);
     handleFormSubmit(data);
+  };
+
+  const captureLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoStatus('Location is not supported on this device');
+      return;
+    }
+
+    setGeoStatus('Requesting location...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setGeoLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          source: 'needy-browser',
+          capturedAt: new Date(position.timestamp).toISOString()
+        });
+        setGeoStatus(`Location captured within ${Math.round(position.coords.accuracy || 0)}m`);
+      },
+      () => {
+        setGeoStatus('Location permission denied. Address will still be submitted.');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 60000
+      }
+    );
   };
 
   return (
@@ -318,6 +350,22 @@ export default function NeedyForm({ type = 'individual', onSubmit }) {
               className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
               placeholder="Zip code"
             />
+          </div>
+        </div>
+        <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Precise location for volunteer assignment</p>
+              <p className="text-xs text-gray-600">{geoStatus}</p>
+            </div>
+            <button
+              type="button"
+              onClick={captureLocation}
+              disabled={isLoading}
+              className="rounded bg-primary-600 px-4 py-2 text-sm font-semibold text-white disabled:bg-gray-400"
+            >
+              Use Current Location
+            </button>
           </div>
         </div>
       </div>

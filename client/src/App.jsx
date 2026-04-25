@@ -26,6 +26,8 @@ import NeedyOrganisationPage from './pages/Needy/NeedyOrganisationPage';
 
 // Payment Pages
 import QRPaymentPage from './pages/QR/QRPaymentPage';
+import TrackingListPage from './pages/Tracking/TrackingListPage';
+import TrackingPage from './pages/Tracking/TrackingPage';
 
 // Error Pages
 import NotFoundPage from './pages/NotFoundPage';
@@ -106,6 +108,26 @@ function App() {
                   <ProtectedRoute
                     element={<QRPaymentPage />}
                     allowedRoles={null} // All authenticated users can access
+                  />
+                }
+              />
+
+              <Route
+                path="/tracking"
+                element={
+                  <ProtectedRoute
+                    element={<TrackingListPage />}
+                    allowedRoles={null}
+                  />
+                }
+              />
+
+              <Route
+                path="/tracking/:needyType/:caseId"
+                element={
+                  <ProtectedRoute
+                    element={<TrackingPage />}
+                    allowedRoles={null}
                   />
                 }
               />

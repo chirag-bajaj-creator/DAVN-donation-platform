@@ -47,6 +47,7 @@ router.get(
             type: d.type,
             amount: d.amount,
             status: d.status,
+            details: d.details,
             createdAt: d.createdAt,
             updatedAt: d.updatedAt
           })),
@@ -477,6 +478,15 @@ router.post(
       });
 
       await report.save();
+
+      needy.verified_by = volunteer.user_id._id;
+      needy.tracking = {
+        ...(needy.tracking?.toObject?.() || needy.tracking || {}),
+        status: 'assigned',
+        assignedVolunteer: volunteer.user_id._id
+      };
+      needy.updatedAt = new Date();
+      await needy.save();
 
       emitRealtimeUpdate({
         adminEvent: 'admin:assignment-created',

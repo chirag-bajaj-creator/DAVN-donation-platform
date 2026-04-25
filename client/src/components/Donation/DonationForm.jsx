@@ -3,429 +3,315 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import ImageUpload from '../Common/ImageUpload';
 
+const normalizeType = (type) => (type === 'basics' ? 'basic_needs' : type);
+const splitLines = (value) => (value || '').split('\n').map((item) => item.trim()).filter(Boolean);
+const splitCsv = (value) => (value || '').split(',').map((item) => item.trim()).filter(Boolean);
+const toNumber = (value) => (value ? Number(value) : undefined);
+const compactObject = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(compactObject).filter((item) => item !== undefined);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.entries(value).reduce((result, [key, item]) => {
+      const compacted = compactObject(item);
+      if (compacted !== undefined) {
+        result[key] = compacted;
+      }
+      return result;
+    }, {});
+  }
+
+  if (typeof value === 'string' && value.trim() === '') {
+    return undefined;
+  }
+
+  return value;
+};
+
+const getSubmissionErrorMessage = (error) => {
+  const details = error.response?.data?.details;
+  if (Array.isArray(details) && details.length > 0) {
+    return details.map((item) => item.message || item.field).join(', ');
+  }
+
+  return error.response?.data?.message
+    || error.response?.data?.error
+    || error.message
+    || 'Submission failed';
+};
+
+function Field({ id, label, error, children }) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      {children}
+      {error ? <p className="client-form-error mt-1">{error.message}</p> : null}
+    </div>
+  );
+}
+
 export default function DonationForm({ type = 'cash', onSubmit }) {
-  const { register, handleSubmit, formState: { errors }, watch } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
+  const donationType = normalizeType(type);
+
+  const textInput = (name, rules, props = {}) => ({
+    ...register(name, rules),
+    disabled: isLoading,
+    className: 'mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5',
+    ...props,
+  });
+
+  const buildDetails = (data) => {
+    const details = {
+      currency: 'INR',
+      name: data.name,
+      phone: data.phone,
+      address: data.address,
+      notes: data.notes,
+      proofType: data.proofType,
+      transactionReference: data.transactionReference,
+      consentToVerify: Boolean(data.consentToVerify),
+      pickupWindowStart: data.pickupWindowStart || undefined,
+      pickupWindowEnd: data.pickupWindowEnd || undefined,
+      pickupInstructions: data.pickupInstructions,
+      details: data.details,
+      description: data.description,
+    };
+
+    if (donationType === 'food') {
+      Object.assign(details, {
+        foodType: data.foodType,
+        quantity: toNumber(data.quantity),
+        unit: data.unit,
+        servings: toNumber(data.servings),
+        isSurplusFood: true,
+        foodSource: data.foodSource,
+        preparedAt: data.preparedAt || undefined,
+        expiresAt: data.expiresAt || undefined,
+        storageCondition: data.storageCondition,
+        packaging: data.packaging,
+      });
+    }
+
+    if (donationType === 'shelter') {
+      Object.assign(details, {
+        shelterType: data.shelterType,
+        duration: data.duration,
+        emergencyLocation: data.emergencyLocation,
+        affectedPeopleCount: toNumber(data.affectedPeopleCount),
+      });
+    }
+
+    if (donationType === 'medical') {
+      Object.assign(details, {
+        medicineType: data.medicineType,
+        hasDocPermission: Boolean(data.hasDocPermission),
+        doctorPermission: Boolean(data.hasDocPermission),
+        medicalDetails: data.medicalDetails,
+      });
+    }
+
+    if (donationType === 'basic_needs') {
+      Object.assign(details, {
+        items: splitLines(data.items),
+        condition: data.condition,
+        clothingType: data.clothingType,
+        ageGroup: data.ageGroup,
+        gender: data.gender,
+        sizes: splitCsv(data.sizes),
+        itemCount: toNumber(data.itemCount),
+        washed: Boolean(data.washed),
+      });
+    }
+
+    if (donationType === 'emergency') {
+      Object.assign(details, {
+        emergencyType: data.emergencyType,
+        emergencyLocation: data.emergencyLocation,
+        affectedPeopleCount: toNumber(data.affectedPeopleCount),
+        requiredBy: data.requiredBy || undefined,
+        priority: data.priority,
+        reliefItems: splitLines(data.reliefItems),
+      });
+    }
+
+    if (uploadedImage) {
+      details.imageUrl = uploadedImage.url;
+      details.imagePublicId = uploadedImage.publicId;
+      details.proofDocuments = [{
+        type: data.proofType || 'photo',
+        url: uploadedImage.url,
+        publicId: uploadedImage.publicId,
+        notes: data.notes,
+      }];
+    }
+
+    return compactObject(details);
+  };
 
   const handleFormSubmit = async (data) => {
     try {
       setIsLoading(true);
-
-      // Map 'basics' to 'basic_needs' for backend
-      const donationType = type === 'basics' ? 'basic_needs' : type;
-
-      // Convert items string to array
-      let itemsArray = undefined;
-      if (data.items) {
-        itemsArray = data.items
-          .split('\n')
-          .map(item => item.trim())
-          .filter(item => item.length > 0);
-      }
-
-      // Restructure form data to match backend schema
-      const submissionData = {
+      await onSubmit({
         type: donationType,
-        amount: Number(data.amount) || 0, // Ensure it's a number
-        details: {
-          currency: 'INR',
-          name: data.name,
-          phone: data.phone,
-          address: data.address,
-          foodType: data.foodType,
-          quantity: data.quantity ? Number(data.quantity) : undefined, // Convert to number
-          shelterType: data.shelterType,
-          details: data.details,
-          medicineType: data.medicineType,
-          hasDocPermission: data.hasDocPermission,
-          medicalDetails: data.medicalDetails,
-          items: itemsArray, // Now an array
-          condition: data.condition
-        }
-      };
-
-      if (uploadedImage) {
-        submissionData.details.imageUrl = uploadedImage.url;
-        submissionData.details.imagePublicId = uploadedImage.publicId;
-      }
-
-      await onSubmit(submissionData);
+        amount: Number(data.amount) || 0,
+        details: buildDetails(data),
+      });
       toast.success('Donation submitted successfully!');
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Submission failed';
-      toast.error(message);
+      toast.error(getSubmissionErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const renderFields = () => {
-    const commonFields = (
-      <>
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Full Name *
-          </label>
-          <input
-            id="name"
-            type="text"
-            {...register('name', { required: 'Name is required' })}
-            disabled={isLoading}
-            className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-            placeholder="Enter your full name"
-          />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+  const commonFields = (
+    <>
+      <div className="donation-form-grid">
+        <Field id="name" label="Full Name *" error={errors.name}>
+          <input id="name" type="text" placeholder="Donor or organization name" {...textInput('name', { required: 'Name is required' })} />
+        </Field>
+        <Field id="phone" label="Phone Number *" error={errors.phone}>
+          <input id="phone" type="tel" placeholder="10-digit phone number" {...textInput('phone', { required: 'Phone number is required', pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be 10 digits' } })} />
+        </Field>
+      </div>
+      <Field id="address" label="Pickup / Contact Address *" error={errors.address}>
+        <textarea id="address" rows="3" placeholder="Full address with landmark" {...textInput('address', { required: 'Address is required' })} />
+      </Field>
+      <div className="donation-form-grid">
+        <Field id="pickupWindowStart" label="Pickup Window Start">
+          <input id="pickupWindowStart" type="datetime-local" {...textInput('pickupWindowStart')} />
+        </Field>
+        <Field id="pickupWindowEnd" label="Pickup Window End">
+          <input id="pickupWindowEnd" type="datetime-local" {...textInput('pickupWindowEnd')} />
+        </Field>
+      </div>
+      <Field id="pickupInstructions" label="Volunteer Pickup Instructions">
+        <textarea id="pickupInstructions" rows="2" placeholder="Gate, floor, contact timing, handling notes" {...textInput('pickupInstructions')} />
+      </Field>
+    </>
+  );
+
+  const amountField = (label = 'Estimated Value (INR) *') => (
+    <Field id="amount" label={label} error={errors.amount}>
+      <input id="amount" type="number" min="1" step="0.01" placeholder="Enter amount or estimated value" {...textInput('amount', { required: 'Amount is required', validate: (value) => Number(value) > 0 || 'Amount must be greater than 0' })} />
+    </Field>
+  );
+
+  return (
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 donation-operation-form">
+      {commonFields}
+      {amountField(donationType === 'cash' ? 'Donation Amount (INR) *' : 'Estimated Value (INR) *')}
+
+      {donationType === 'food' && (
+        <div className="donation-form-grid">
+          <Field id="foodType" label="Food Type *" error={errors.foodType}>
+            <input id="foodType" placeholder="Cooked meals, dry ration, packaged food" {...textInput('foodType', { required: 'Food type is required' })} />
+          </Field>
+          <Field id="quantity" label="Quantity *" error={errors.quantity}>
+            <input id="quantity" type="number" min="1" placeholder="Total quantity" {...textInput('quantity', { required: 'Quantity is required' })} />
+          </Field>
+          <Field id="unit" label="Unit"><input id="unit" placeholder="servings, kg, packets" {...textInput('unit')} /></Field>
+          <Field id="servings" label="Estimated Servings"><input id="servings" type="number" min="1" {...textInput('servings')} /></Field>
+          <Field id="foodSource" label="Food Source"><input id="foodSource" placeholder="Home, restaurant, event, store" {...textInput('foodSource')} /></Field>
+          <Field id="packaging" label="Packaging Status"><input id="packaging" placeholder="Packed, sealed, needs containers" {...textInput('packaging')} /></Field>
+          <Field id="preparedAt" label="Prepared At"><input id="preparedAt" type="datetime-local" {...textInput('preparedAt')} /></Field>
+          <Field id="expiresAt" label="Safe Until"><input id="expiresAt" type="datetime-local" {...textInput('expiresAt')} /></Field>
+          <Field id="storageCondition" label="Storage Condition"><input id="storageCondition" placeholder="Hot, chilled, room temperature" {...textInput('storageCondition')} /></Field>
         </div>
+      )}
 
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-            Phone Number *
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            {...register('phone', {
-              required: 'Phone number is required',
-              pattern: {
-                value: /^[0-9]{10}$/,
-                message: 'Phone number must be 10 digits'
-              }
-            })}
-            disabled={isLoading}
-            className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-            placeholder="Enter 10-digit phone number"
-          />
-          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
+      {donationType === 'shelter' && (
+        <div className="donation-form-grid">
+          <Field id="shelterType" label="Shelter Type *" error={errors.shelterType}>
+            <select id="shelterType" {...textInput('shelterType', { required: 'Shelter type is required' })}>
+              <option value="">Select shelter type</option>
+              <option value="room">Single Room</option>
+              <option value="house">Full House</option>
+              <option value="temporary">Temporary Stay</option>
+              <option value="rent_support">Rent Support</option>
+            </select>
+          </Field>
+          <Field id="duration" label="Available Duration *" error={errors.duration}><input id="duration" placeholder="3 nights, 1 month, immediate only" {...textInput('duration', { required: 'Duration is required' })} /></Field>
+          <Field id="emergencyLocation" label="Shelter Area"><input id="emergencyLocation" placeholder="Locality, city" {...textInput('emergencyLocation')} /></Field>
+          <Field id="affectedPeopleCount" label="Capacity"><input id="affectedPeopleCount" type="number" min="1" placeholder="People supported" {...textInput('affectedPeopleCount')} /></Field>
         </div>
-      </>
-    );
+      )}
 
-    switch (type) {
-      case 'cash':
-        return (
-          <>
-            {commonFields}
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Donation Amount (₹) *
-              </label>
-              <input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="1"
-                {...register('amount', {
-                  required: 'Amount is required',
-                  validate: {
-                    positive: (value) => value > 0 || 'Amount must be greater than 0',
-                    maxValue: (value) => value <= 999999999 || 'Amount is too large',
-                  },
-                })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="Enter donation amount"
-              />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>}
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded p-4">
-              <p className="text-sm text-blue-800">
-                ℹ️ After submission, you'll receive a QR code to complete payment securely.
-              </p>
-            </div>
-          </>
-        );
+      {donationType === 'medical' && (
+        <>
+          <div className="donation-form-grid">
+            <Field id="medicineType" label="Medicine / Support Type *" error={errors.medicineType}><input id="medicineType" placeholder="Medicines, device, treatment support" {...textInput('medicineType', { required: 'Medicine/support type is required' })} /></Field>
+            <Field id="transactionReference" label="Bill / Reference Number"><input id="transactionReference" placeholder="Optional bill or purchase reference" {...textInput('transactionReference')} /></Field>
+          </div>
+          <label className="donation-checkbox"><input type="checkbox" {...register('hasDocPermission')} disabled={isLoading} /> Doctor permission or prescription available</label>
+          <Field id="medicalDetails" label="Medical Details *" error={errors.medicalDetails}><textarea id="medicalDetails" rows="3" placeholder="Condition, expiry, prescription requirement, handling notes" {...textInput('medicalDetails', { required: 'Medical details are required' })} /></Field>
+        </>
+      )}
 
-      case 'food':
-        return (
-          <>
-            {commonFields}
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Estimated Value (₹) *
-              </label>
-              <input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="1"
-                {...register('amount', {
-                  required: 'Estimated value is required',
-                  validate: {
-                    positive: (value) => value > 0 || 'Value must be greater than 0',
-                  },
-                })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="Estimated value of food donation"
-              />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                Address (Pickup Location) *
-              </label>
-              <textarea
-                id="address"
-                {...register('address', { required: 'Address is required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                rows="3"
-                placeholder="Enter full address"
-              />
-              {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="foodType" className="block text-sm font-medium text-gray-700">
-                Type of Food *
-              </label>
-              <input
-                id="foodType"
-                type="text"
-                {...register('foodType', { required: 'Food type is required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="e.g., Cooked rice, Packaged biscuits, Fresh vegetables"
-              />
-              {errors.foodType && <p className="text-red-500 text-sm mt-1">{errors.foodType.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
-                Quantity (in units) *
-              </label>
-              <input
-                id="quantity"
-                type="number"
-                step="1"
-                min="1"
-                {...register('quantity', {
-                  required: 'Quantity is required',
-                  validate: {
-                    positive: (value) => value > 0 || 'Quantity must be greater than 0',
-                  },
-                })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="e.g., 10, 50, 5"
-              />
-              {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity.message}</p>}
-            </div>
-          </>
-        );
-
-      case 'shelter':
-        return (
-          <>
-            {commonFields}
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Estimated Value (₹) *
-              </label>
-              <input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="1"
-                {...register('amount', {
-                  required: 'Estimated value is required',
-                  validate: {
-                    positive: (value) => value > 0 || 'Value must be greater than 0',
-                  },
-                })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="Estimated value of shelter support"
-              />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="shelterType" className="block text-sm font-medium text-gray-700">
-                Type of Shelter *
-              </label>
-              <select
-                id="shelterType"
-                {...register('shelterType', { required: 'Shelter type is required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-              >
-                <option value="">Select shelter type</option>
-                <option value="room">Single Room</option>
-                <option value="house">Full House</option>
-                <option value="temporary">Temporary Stay</option>
-              </select>
-              {errors.shelterType && <p className="text-red-500 text-sm mt-1">{errors.shelterType.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="details" className="block text-sm font-medium text-gray-700">
-                Additional Details *
-              </label>
-              <textarea
-                id="details"
-                {...register('details', { required: 'Details are required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                rows="3"
-                placeholder="Describe the shelter - location, capacity, amenities, duration (if temporary)"
-              />
-              {errors.details && <p className="text-red-500 text-sm mt-1">{errors.details.message}</p>}
-            </div>
-          </>
-        );
-
-      case 'medical':
-        return (
-          <>
-            {commonFields}
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Estimated Value (₹) *
-              </label>
-              <input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="1"
-                {...register('amount', {
-                  required: 'Estimated value is required',
-                  validate: {
-                    positive: (value) => value > 0 || 'Value must be greater than 0',
-                  },
-                })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="Estimated value of medical support"
-              />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="medicineType" className="block text-sm font-medium text-gray-700">
-                Type of Medicine/Support *
-              </label>
-              <input
-                id="medicineType"
-                type="text"
-                {...register('medicineType', { required: 'Medicine type is required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="e.g., Antibiotics, Pain relief, Medical equipment"
-              />
-              {errors.medicineType && <p className="text-red-500 text-sm mt-1">{errors.medicineType.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="hasDocPermission" className="flex items-center space-x-2">
-                <input
-                  id="hasDocPermission"
-                  type="checkbox"
-                  {...register('hasDocPermission')}
-                  disabled={isLoading}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm font-medium text-gray-700">Doctor Permission Available</span>
-              </label>
-            </div>
-
-            <div>
-              <label htmlFor="medicalDetails" className="block text-sm font-medium text-gray-700">
-                Details *
-              </label>
-              <textarea
-                id="medicalDetails"
-                {...register('medicalDetails', { required: 'Details are required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                rows="3"
-                placeholder="Describe the medical support you're offering"
-              />
-              {errors.medicalDetails && <p className="text-red-500 text-sm mt-1">{errors.medicalDetails.message}</p>}
-            </div>
-          </>
-        );
-
-      case 'basics':
-        return (
-          <>
-            {commonFields}
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Estimated Value (₹) *
-              </label>
-              <input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="1"
-                {...register('amount', {
-                  required: 'Estimated value is required',
-                  validate: {
-                    positive: (value) => value > 0 || 'Value must be greater than 0',
-                  },
-                })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                placeholder="Estimated value of items donated"
-              />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="items" className="block text-sm font-medium text-gray-700">
-                Items to Donate * (One item per line)
-              </label>
-              <textarea
-                id="items"
-                {...register('items', { required: 'Items list is required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-                rows="4"
-                placeholder="List items (one per line):&#10;Clothes - 10 shirts&#10;Blankets - 5&#10;Hygiene items - 10 packets"
-              />
-              {errors.items && <p className="text-red-500 text-sm mt-1">{errors.items.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="condition" className="block text-sm font-medium text-gray-700">
-                Condition of Items *
-              </label>
-              <select
-                id="condition"
-                {...register('condition', { required: 'Condition is required' })}
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 px-4 py-2.5"
-              >
+      {donationType === 'basic_needs' && (
+        <>
+          <Field id="items" label="Items to Donate * (one per line)" error={errors.items}><textarea id="items" rows="4" placeholder={'Shirts - 10\nBlankets - 5\nHygiene kits - 12'} {...textInput('items', { required: 'Items list is required' })} /></Field>
+          <div className="donation-form-grid">
+            <Field id="condition" label="Condition *" error={errors.condition}>
+              <select id="condition" {...textInput('condition', { required: 'Condition is required' })}>
                 <option value="">Select condition</option>
                 <option value="new">New</option>
                 <option value="like-new">Like New</option>
                 <option value="good">Good</option>
                 <option value="fair">Fair</option>
               </select>
-              {errors.condition && <p className="text-red-500 text-sm mt-1">{errors.condition.message}</p>}
-            </div>
-          </>
-        );
+            </Field>
+            <Field id="itemCount" label="Total Item Count"><input id="itemCount" type="number" min="1" {...textInput('itemCount')} /></Field>
+            <Field id="clothingType" label="Clothing / Basic Category"><input id="clothingType" placeholder="Winterwear, hygiene, school supplies" {...textInput('clothingType')} /></Field>
+            <Field id="sizes" label="Sizes (comma separated)"><input id="sizes" placeholder="S, M, L, kids 8-10" {...textInput('sizes')} /></Field>
+            <Field id="ageGroup" label="Age Group"><input id="ageGroup" placeholder="Infant, children, adults, elderly" {...textInput('ageGroup')} /></Field>
+            <Field id="gender" label="Gender Fit"><input id="gender" placeholder="Men, women, unisex, children" {...textInput('gender')} /></Field>
+          </div>
+          <label className="donation-checkbox"><input type="checkbox" {...register('washed')} disabled={isLoading} /> Clothes are washed, sorted, and packed</label>
+        </>
+      )}
 
-      default:
-        return commonFields;
-    }
-  };
+      {donationType === 'emergency' && (
+        <>
+          <div className="donation-form-grid">
+            <Field id="emergencyType" label="Emergency Type *" error={errors.emergencyType}><input id="emergencyType" placeholder="Flood, fire, heatwave, accident relief" {...textInput('emergencyType', { required: 'Emergency type is required' })} /></Field>
+            <Field id="priority" label="Priority *" error={errors.priority}>
+              <select id="priority" {...textInput('priority', { required: 'Priority is required' })}>
+                <option value="">Select priority</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </Field>
+            <Field id="emergencyLocation" label="Affected Location *" error={errors.emergencyLocation}><input id="emergencyLocation" placeholder="Area, city, landmark" {...textInput('emergencyLocation', { required: 'Affected location is required' })} /></Field>
+            <Field id="affectedPeopleCount" label="People Supported"><input id="affectedPeopleCount" type="number" min="1" {...textInput('affectedPeopleCount')} /></Field>
+            <Field id="requiredBy" label="Required By"><input id="requiredBy" type="datetime-local" {...textInput('requiredBy')} /></Field>
+          </div>
+          <Field id="reliefItems" label="Relief Items * (one per line)" error={errors.reliefItems}><textarea id="reliefItems" rows="4" placeholder={'Water bottles - 100\nBlankets - 20\nFirst-aid kits - 10'} {...textInput('reliefItems', { required: 'Relief items are required' })} /></Field>
+        </>
+      )}
 
-  return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {renderFields()}
+      {donationType === 'cash' && (
+        <Field id="description" label="Cash Purpose / Case Notes"><textarea id="description" rows="3" placeholder="Which verified need or relief purpose should this support?" {...textInput('description')} /></Field>
+      )}
 
-      <ImageUpload
-        onImageUpload={setUploadedImage}
-        disabled={isLoading}
-        folder="donations"
-      />
+      <div className="donation-form-grid">
+        <Field id="proofType" label="Proof Type"><input id="proofType" placeholder="photo, bill, transaction, inventory list" {...textInput('proofType')} /></Field>
+        <Field id="transactionReference" label="Reference / Batch ID"><input id="transactionReference" placeholder="UPI ref, bill number, batch note" {...textInput('transactionReference')} /></Field>
+      </div>
+      <Field id="notes" label="Verification Notes"><textarea id="notes" rows="3" placeholder="Anything the admin or volunteer should verify before routing this donation" {...textInput('notes')} /></Field>
+      <label className="donation-checkbox"><input type="checkbox" {...register('consentToVerify')} disabled={isLoading} /> I consent to volunteer/admin verification of these details</label>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full bg-primary-600 text-white py-2 px-4 rounded font-medium hover:bg-primary-700 disabled:bg-gray-400"
-      >
+      <ImageUpload onImageUpload={setUploadedImage} disabled={isLoading} folder="donations" />
+
+      <button type="submit" disabled={isLoading} className="client-button donation-submit-button">
         {isLoading ? 'Processing...' : 'Submit Donation'}
       </button>
     </form>

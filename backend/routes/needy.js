@@ -2,6 +2,7 @@ const express = require('express');
 const neededController = require('../controllers/neededController');
 const validate = require('../middleware/validate');
 const authenticate = require('../middleware/authenticate');
+const optionalAuthenticate = require('../middleware/optionalAuthenticate');
 const {
   registerIndividualSchema,
   registerOrganizationSchema
@@ -15,6 +16,7 @@ const router = express.Router();
  */
 router.post(
   '/individuals',
+  optionalAuthenticate,
   validate(registerIndividualSchema),
   neededController.registerIndividual
 );
@@ -25,6 +27,7 @@ router.post(
  */
 router.post(
   '/organizations',
+  optionalAuthenticate,
   validate(registerOrganizationSchema),
   neededController.registerOrganization
 );

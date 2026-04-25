@@ -166,9 +166,91 @@
   - removed client/admin login-form auto-redirect effects based only on `isAuthenticated`.
   - only successful login form submission now redirects to dashboard/panel.
   - elevated `npm.cmd run build` passed again for `client`, `volunteer-app`, and `admin-app`.
+- Implemented Real Aid Operations V1 from `real_use_cases_only.pdf`:
+  - client landing and donation pages now use a bright festival-impact visual direction and real aid lanes for surplus food, clothes/basic needs, emergency relief, verified cash, shelter, and medical aid.
+  - client donation form now captures operational details such as pickup windows, food freshness, serving counts, item condition, sizes, emergency priority, affected location, proof type/reference, and verification consent.
+  - client needy registration now allows `disaster_relief` for individuals as well as organizations.
+  - backend donation model/Joi validation now stores operational donation details and supports `emergency`, `clothes`, and `campaign` donation types in addition to existing types.
+  - backend individual needy model/Joi validation now supports `disaster_relief`.
+  - backend admin donations response now returns `details` for operational triage.
+  - backend verification reports now persist field-operation details from volunteer reports, including outcome, acknowledgment, issue flags, follow-up recommendation, and proof metadata.
+  - admin donations page now shows operational triage cards with actual backend statuses: `submitted`, `verified`, `in_delivery`, and `completed`.
+  - volunteer tasks now surface need type, contact, trust score, proof count, and field checklist context.
+  - volunteer report form now collects operation outcome, recipient acknowledgment, quality/safety notes, issue flags, follow-up recommendation, proof metadata, and verification summary.
+  - avoided adding `lucide-react` after npm install was interrupted; used dependency-free marker icons instead.
+  - elevated `npm.cmd run build` passed for `client`, `admin-app`, and `volunteer-app`; non-elevated builds still hit known Vite `spawn EPERM`.
+- Fixed client donation submit `422 Unprocessable Entity` caused by optional blank text fields:
+  - `backend/schemas/donationSchema.js` now treats blank optional donation detail strings/URIs as omitted.
+  - `client/src/components/Donation/DonationForm.jsx` now strips blank optional fields before posting and surfaces backend validation details in toast errors.
+  - `client/src/pages/Donation/DonationFormPage.jsx` now rethrows donation submit failures so the form-level handler can show the real validation detail instead of swallowing the error.
+  - restarted local backend process on port `5000` after the schema change; old running backend instances will keep returning stale validation errors until restarted.
+  - targeted backend Joi validation check passed.
+  - elevated `npm.cmd run build` passed for `client`; non-elevated build still hits known Vite sandbox `spawn EPERM`.
+- Fixed donation submit crash when uploading proof images:
+  - `backend/models/Donation.js` now uses an explicit Mongoose subdocument schema for `details.proofDocuments`.
+  - root cause was Mongoose interpreting nested `proofDocuments[].type` as the array caster, so proof objects were cast as strings.
+  - local Mongoose validation now accepts uploaded proof objects with `type`, `url`, `publicId`, and `notes`.
+  - restarted local backend on port `5000`; new listener PID was `21540`.
+  - elevated `npm.cmd run build` passed for `client`.
+- Implemented Real Aid location and live tracking V1:
+  - backend models now store GeoJSON-style coordinates for needy addresses and volunteer current locations.
+  - needy registration can capture browser GPS and persists it with the submitted request.
+  - volunteer accepted cases now start a tracking lifecycle (`assigned`, `accepted`, `in_route`, `completed`, `cancelled`).
+  - volunteer app sends browser GPS updates for accepted tasks via `POST /api/volunteers/location`.
+  - backend updates active assigned cases with the latest volunteer location and emits admin/volunteer Socket.IO events.
+  - added backend tracking API at `/api/tracking/mine` and `/api/tracking/:needyType/:caseId`.
+  - client app now has `/tracking` and `/tracking/:needyType/:caseId` pages with polling-based live status, ETA/distance, route visualization, and OpenStreetMap link.
+  - backend nearest-volunteer endpoint added at `/api/volunteers/cases/:caseId/nearest`.
+  - admin needy assignment modal now shows nearest GPS-enabled volunteers when coordinates are available.
+  - verification/admin assignment routes now write `verified_by` and tracking assignment state to the needy record.
+  - elevated builds passed for `client`, `volunteer-app`, and `admin-app`.
+  - backend syntax checks passed and `npm.cmd test -- --passWithNoTests` passed with no tests found.
+  - backend was restarted cleanly on port `5000`; health check passed.
+- Upgraded client tracking from 5-second polling to live server-pushed map updates:
+  - added SSE stream service in `backend/services/trackingStreamService.js`.
+  - added authenticated EventSource route `GET /api/tracking/:needyType/:caseId/stream` using query-token auth because browser EventSource cannot set custom auth headers.
+  - volunteer GPS updates now emit directly to active tracking streams for assigned cases.
+  - `client/src/services/trackingService.js` opens an `EventSource` stream instead of polling.
+  - `client/src/pages/Tracking/TrackingPage.jsx` now updates marker position immediately from streamed volunteer coordinates.
+  - route line and marker positions are calculated from actual case/volunteer lat/lng bounds.
+  - elevated `npm.cmd run build` passed for `client`.
+  - backend syntax checks passed and backend restarted on port `5000`; health check passed.
+- Fixed volunteer homepage popup login not opening dashboard:
+  - root cause was `volunteer-app/src/components/LoginModal.jsx` using `onSuccess={onClose}` for embedded `LoginPage`, so successful popup login only closed the modal.
+  - added `onLoginSuccess` prop to `LoginModal`.
+  - `volunteer-app/src/pages/HomePage.jsx` now closes the modal and navigates to `/dashboard` after popup login.
+  - direct `/login` page already navigated correctly.
+  - elevated `npm.cmd run build` passed for `volunteer-app`.
+- Fixed live tracking map not appearing when the SSE stream is slow/failing:
+  - `client/src/pages/Tracking/TrackingPage.jsx` now loads the current tracking record with REST first, then listens for live SSE updates.
+  - the map can render from current backend tracking data instead of waiting only for `tracking:snapshot`.
+  - `volunteer-app/src/pages/MyTasksPage.jsx` now awaits the live-location POST before showing the success toast.
+  - elevated `npm.cmd run build` passed for `client` and `volunteer-app`; non-elevated builds still hit the known Vite sandbox `spawn EPERM`.
+- Added browser console diagnostics for Track Aid:
+  - tracking list load logs API result counts and generated `Track Route` targets.
+  - `Track Route` button clicks log the exact destination route.
+  - tracking detail REST loads, SSE stream open/errors/events, and map render state now log case id, status, and missing/present coordinates.
+  - elevated `npm.cmd run build` passed for `client`.
+- Fixed assigned-case live location not appearing on Track Aid:
+  - `backend/controllers/volunteerController.js` now applies volunteer GPS updates to cases with tracking status `assigned`, `accepted`, or `in_route`.
+  - `backend/controllers/trackingController.js` now falls back to the assigned volunteer profile's `currentLocation` when the needy case has no `tracking.lastVolunteerLocation` yet.
+  - backend syntax checks passed for `trackingController.js` and `volunteerController.js`.
+  - restarted local backend on port `5000`; `/health` returned OK.
 
 ## Known Issues / Pending Work
 
+- Location/tracking V1 remaining limits:
+  - map is an in-app live coordinate map plus OpenStreetMap link, not embedded tile maps or road-polyline turn-by-turn routing.
+  - location-based matching only works when needy and volunteers have granted browser GPS.
+  - nearest-volunteer UI is currently in admin needy assignment flow for individual needy records.
+- Saved product research for later implementation: real India charity/NGO pain points and matching website features.
+  - Fake online donation pages and cloned charity websites: add `Verified Case` badges, official-platform-only payment warnings, verification timeline, and avoid showing personal UPI IDs.
+  - Fake medical fundraisers using morphed documents or reused photos: add medical-specific verification fields such as hospital name, doctor name, bill/prescription upload, hospital contact, and `documents pending verification` status.
+  - NGOs misusing orphan/beneficiary claims: add organization verification checklist with registration certificate, PAN, address proof, 12A/80G if available, person-in-charge details, beneficiary count, and duplicate beneficiary checks.
+  - Fake NGO job/volunteer scams: show `No fee required to become a volunteer/request help`, add volunteer approval status, and issue official volunteer ID only after approval.
+  - NGOs being cheated by fake CSR/donation offers: add admin-side donation/CSR request tracker, suspicious activity logging, and payment reconciliation by transaction ID/donor/status.
+  - Rural/low-digital-literacy users and shared-phone usage: prioritize mobile-first forms, save progress, phone-number-first login/registration, Hindi/simple language mode, voice note upload, and assisted needy registration by volunteers.
+  - Highest-impact future features: client purpose screen (`I want to donate` / `I need help`), volunteer next-action dashboard, verified-case timeline, medical/organization-specific forms, and simple-language trust notices.
 - The new Vercel rewrite files now match the requested API proxy config exactly, but they no longer include the previous SPA catch-all rewrite. If direct client-side deep links fail on Vercel, add an SPA fallback after the API/health rewrites.
 - Admin and volunteer Socket.IO clients no longer point at the raw backend host. If live sockets are required through Vercel, verify whether same-origin socket proxying is configured or set `VITE_SOCKET_URL` appropriately.
 - Dependency note:

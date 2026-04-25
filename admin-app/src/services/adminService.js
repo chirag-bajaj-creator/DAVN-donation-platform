@@ -53,7 +53,7 @@ export const adminService = {
 
   getDonations: async (limit = 50, skip = 0, status = null) => {
     let url = `${API_BASE}/admin/donations?limit=${limit}&skip=${skip}`;
-    if (status) url += `&status=${status}`;
+    if (status) url += `&status=${encodeURIComponent(status)}`;
     const res = await fetch(url, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch donations');
     return res.json();
@@ -120,6 +120,15 @@ export const adminService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || data.message || 'Failed to assign volunteer');
+    return data;
+  },
+
+  getNearestVolunteers: async (needyId) => {
+    const res = await fetch(`${API_BASE}/volunteers/cases/${needyId}/nearest`, {
+      headers: getAuthHeader()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || 'Failed to find nearest volunteers');
     return data;
   },
 

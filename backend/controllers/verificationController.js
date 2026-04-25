@@ -4,6 +4,7 @@ const NeededOrganization = require('../models/NeededOrganization');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
 const { logger } = require('../config/logger');
+const { emitRealtimeUpdate } = require('../services/socketService');
 
 const verificationController = {
   /**
@@ -122,6 +123,32 @@ const verificationController = {
       });
 
       await report.save();
+
+      const needyModel = needy_type === 'NeededOrganization' ? NeededOrganization : NeededIndividual;
+      const needyRecord = await needyModel.findById(needy_id);
+      if (needyRecord) {
+        needyRecord.verified_by = volunteer_id;
+        needyRecord.tracking = {
+          ...(needyRecord.tracking?.toObject?.() || needyRecord.tracking || {}),
+          status: 'assigned',
+          assignedVolunteer: volunteer_id
+        };
+        needyRecord.updatedAt = new Date();
+        await needyRecord.save();
+      }
+
+      emitRealtimeUpdate({
+        adminEvent: 'admin:case-updated',
+        userId: volunteer_id,
+        userEvent: 'volunteer:assignment-created',
+        payload: {
+          caseId: needy_id,
+          needyType: needy_type,
+          volunteerId: volunteer_id,
+          trackingStatus: 'assigned',
+          updatedAt: new Date()
+        }
+      });
 
       res.status(201).json({
         success: true,

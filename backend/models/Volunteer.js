@@ -1,5 +1,25 @@
 const mongoose = require('mongoose');
 
+const geoLocationSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: undefined
+    },
+    lat: Number,
+    lng: Number,
+    accuracy: Number,
+    source: String,
+    capturedAt: Date
+  },
+  { _id: false }
+);
+
 const volunteerSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -49,6 +69,12 @@ const volunteerSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  currentLocation: geoLocationSchema,
+  locationSharing: {
+    type: Boolean,
+    default: false
+  },
+  lastLocationAt: Date,
   createdAt: {
     type: Date,
     default: Date.now
@@ -79,5 +105,6 @@ volunteerSchema.index({ status: 1 });
 volunteerSchema.index({ type: 1 });
 volunteerSchema.index({ createdAt: -1 });
 volunteerSchema.index({ rating: -1 });
+volunteerSchema.index({ currentLocation: '2dsphere' });
 
 module.exports = mongoose.model('Volunteer', volunteerSchema);

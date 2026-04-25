@@ -16,6 +16,7 @@ const verificationRoutes = require('./routes/verification');
 const uploadRoutes = require('./routes/uploads');
 const volunteerRoutes = require('./routes/volunteer');
 const adminRoutes = require('./routes/admin');
+const trackingRoutes = require('./routes/tracking');
 
 const errorHandler = require('./middleware/errorHandler');
 const authenticate = require('./middleware/authenticate');
@@ -112,6 +113,7 @@ app.use('/api/verification', authenticate, verificationRoutes);
 app.use('/api/uploads', authenticate, uploadRoutes);
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/tracking', trackingRoutes);
 
 app.get('/health', (req, res) => {
   res.json({
