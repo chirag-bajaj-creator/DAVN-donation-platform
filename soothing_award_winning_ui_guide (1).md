@@ -7,7 +7,7 @@
 ## 1. Design Direction
 
 Use a **soft humanitarian UI**: calm colors, clean sections, gentle rounded cards, emotional but not dramatic visuals, and strong trust-building elements.
-
+jk
 Your website should feel:
 
 - Safe
