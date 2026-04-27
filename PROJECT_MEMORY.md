@@ -54,6 +54,11 @@
   - request logging is quiet for `/live`, `/ready`, and `/health`.
   - backend Docker/deploy health checks were updated to `5002`; `backend/docker-compose.yml` explicitly sets `PORT=5002` so the container does not depend on an uncommitted VM `.env` port value.
   - Public UptimeRobot route remains `http://135.119.93.20/dawn/health` unless Nginx is changed.
+- Updated backend deploy workflow to avoid multiline SSH secret formatting issues:
+  - `.github/workflows/deploy.yml` no longer uses `appleboy/ssh-action`.
+  - deploy now expects repository secret `VM_SSH_KEY_B64`, a one-line base64 encoding of the VM private key.
+  - keep `VM_HOST=135.119.93.20` and `VM_USER=azureuser` as repository secrets.
+  - VM key test succeeded locally with `ssh -i ~/.ssh/github_actions_davn azureuser@localhost 'echo SSH_OK'`.
 - Redesigned all three public landing pages from the reference screenshot and `soothing_award_winning_ui_guide (1).md`:
   - client landing is now closest to the donation-platform reference, with calm ivory/green UI, hero aid illustration, donor/volunteer/NGO flow card, how-it-works, donation categories, impact stats, trust/safety, tracking timeline, CTA, and footer.
   - admin landing now uses the same soothing structure adapted to admin modules, operational timeline, trust controls, and sign-in CTA.

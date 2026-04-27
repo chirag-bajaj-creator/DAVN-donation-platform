@@ -16,16 +16,25 @@ jobs:
 
     steps:
       - name: Deploy to Azure VM over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script_stop: true
-          script: |
+        shell: bash
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+          VM_SSH_KEY_B64: ${{ secrets.VM_SSH_KEY_B64 }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          printf '%s' "$VM_SSH_KEY_B64" | base64 -d > ~/.ssh/vm_key
+          chmod 600 ~/.ssh/vm_key
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/vm_key -o IdentitiesOnly=yes "$VM_USER@$VM_HOST" <<'EOF'
+            set -euo pipefail
             cd /home/azureuser/DAVN-donation-platform
             git pull origin master
             cd backend
             sudo docker-compose down
             sudo docker-compose up -d --build
             curl -f http://127.0.0.1:5002/health
+          EOF
