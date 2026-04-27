@@ -52,7 +52,7 @@
   - changed `/ready` and `/health` to use `mongoose.connection.readyState`; they return 200 only when MongoDB is connected and 503 when disconnected.
   - `/health` now returns simple stable monitoring JSON with status, service, uptime, db, and timestamp, without exposing secrets.
   - request logging is quiet for `/live`, `/ready`, and `/health`.
-  - backend Docker/deploy health checks and local backend `.env` port were updated to `5002`.
+  - backend Docker/deploy health checks were updated to `5002`; `backend/docker-compose.yml` explicitly sets `PORT=5002` so the container does not depend on an uncommitted VM `.env` port value.
   - Public UptimeRobot route remains `http://135.119.93.20/dawn/health` unless Nginx is changed.
 - Redesigned all three public landing pages from the reference screenshot and `soothing_award_winning_ui_guide (1).md`:
   - client landing is now closest to the donation-platform reference, with calm ivory/green UI, hero aid illustration, donor/volunteer/NGO flow card, how-it-works, donation categories, impact stats, trust/safety, tracking timeline, CTA, and footer.
