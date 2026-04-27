@@ -2,6 +2,7 @@ const pino = require('pino');
 const pinoHttp = require('pino-http');
 
 const level = process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
+const quietHealthPaths = new Set(['/live', '/ready', '/health']);
 
 const logger = pino({
   level,
@@ -29,7 +30,8 @@ const httpLogger = pinoHttp({
   customLogLevel: (req, res, error) => {
     if (error || res.statusCode >= 500) return 'error';
     if (res.statusCode >= 400) return 'warn';
-    if (req.url === '/health') return 'silent';
+    const path = (req.url || '').split('?')[0];
+    if (quietHealthPaths.has(path)) return 'silent';
     return 'info';
   },
   customSuccessMessage: (req) => `${req.method} ${req.url} completed`,

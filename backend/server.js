@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const { Server } = require('socket.io');
 
 const authRoutes = require('./routes/auth');
@@ -27,6 +28,10 @@ const { logger, httpLogger } = require('./config/logger');
 
 const app = express();
 const server = http.createServer(app);
+const getDbStatus = () => (
+  mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+);
+const isDbConnected = () => getDbStatus() === 'connected';
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
@@ -115,11 +120,32 @@ app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/tracking', trackingRoutes);
 
+app.get('/live', (req, res) => {
+  res.status(200).json({
+    status: 'alive',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/ready', (req, res) => {
+  const connected = isDbConnected();
+
+  res.status(connected ? 200 : 503).json({
+    status: connected ? 'ready' : 'not_ready',
+    db: getDbStatus(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date()
+  const connected = isDbConnected();
+
+  res.status(connected ? 200 : 503).json({
+    status: connected ? 'healthy' : 'unhealthy',
+    service: process.env.SERVICE_NAME || 'backend',
+    uptime: process.uptime(),
+    db: getDbStatus(),
+    timestamp: new Date().toISOString()
   });
 });
 

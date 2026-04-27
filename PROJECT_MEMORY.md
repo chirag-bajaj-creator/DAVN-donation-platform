@@ -40,6 +40,20 @@
 
 ## Recent Changes
 
+- User clarified the most recent work was UptimeRobot monitoring work, not the Track Aid live-location controller fixes.
+  - Treat UptimeRobot setup/verification as the latest session milestone.
+  - UptimeRobot should monitor `http://135.119.93.20/dawn/health`.
+  - External verification on 2026-04-27: `http://135.119.93.20/dawn/health` returned `200 {"status":"OK","timestamp":"..."}`.
+  - Direct backend health also worked at `http://135.119.93.20:5001/health`, but `/dawn/health` is preferred because it verifies the public reverse-proxy path used by deployed frontends.
+  - `http://135.119.93.20/health` returned `Cannot GET /health` and should not be used.
+  - User configured UptimeRobot as an HTTP(s) monitor and confirmed it is up.
+- Implemented Step 16 production health endpoints for backend:
+  - added `/live` liveness endpoint that returns 200 without checking MongoDB.
+  - changed `/ready` and `/health` to use `mongoose.connection.readyState`; they return 200 only when MongoDB is connected and 503 when disconnected.
+  - `/health` now returns simple stable monitoring JSON with status, service, uptime, db, and timestamp, without exposing secrets.
+  - request logging is quiet for `/live`, `/ready`, and `/health`.
+  - backend Docker/deploy health checks and local backend `.env` port were updated to `5002`.
+  - Public UptimeRobot route remains `http://135.119.93.20/dawn/health` unless Nginx is changed.
 - Redesigned all three public landing pages from the reference screenshot and `soothing_award_winning_ui_guide (1).md`:
   - client landing is now closest to the donation-platform reference, with calm ivory/green UI, hero aid illustration, donor/volunteer/NGO flow card, how-it-works, donation categories, impact stats, trust/safety, tracking timeline, CTA, and footer.
   - admin landing now uses the same soothing structure adapted to admin modules, operational timeline, trust controls, and sign-in CTA.
