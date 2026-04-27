@@ -4,7 +4,7 @@
 .admin-page {
   width: 100%;
   max-width: 100%;
-  color: #f8fbff;
+  color: #263238;
 }
 
 .admin-dashboard h1,
@@ -12,8 +12,8 @@
   margin: 0;
   font-size: clamp(28px, 3vw, 38px);
   font-weight: 800;
-  letter-spacing: -0.05em;
-  color: #ffffff;
+  letter-spacing: 0;
+  color: #263238;
 }
 
 .page-header {
@@ -31,7 +31,7 @@
 .page-eyebrow {
   display: inline-flex;
   margin-bottom: 10px;
-  color: #38bdf8;
+  color: #2f7d5c;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.24em;
@@ -44,7 +44,7 @@
 
 .page-description {
   margin: 10px 0 0;
-  color: rgba(226, 232, 240, 0.72);
+  color: #6b7280;
   line-height: 1.65;
   font-size: 14px;
 }
@@ -61,14 +61,13 @@
 .stat-card,
 .donations-breakdown,
 .modal {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(8, 17, 31, 0.66);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.24);
+  border: 1px solid #e8dccb;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(38, 50, 56, 0.08);
 }
 
 .panel-surface {
-  border-radius: 28px;
+  border-radius: 20px;
 }
 
 .stats-grid {
@@ -81,40 +80,33 @@
 .stat-card {
   position: relative;
   padding: 22px;
-  border-radius: 24px;
+  border-radius: 20px;
   overflow: hidden;
 }
 
 .stat-card::before {
-  content: '';
-  position: absolute;
-  inset: auto -30% -65% auto;
-  width: 180px;
-  height: 180px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.18), transparent 68%);
-  pointer-events: none;
+  display: none;
 }
 
 .stat-label {
   margin-bottom: 10px;
-  color: rgba(226, 232, 240, 0.62);
+  color: #6b7280;
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .stat-value {
   font-size: clamp(30px, 4vw, 44px);
   font-weight: 900;
-  letter-spacing: -0.06em;
-  color: #ffffff;
+  letter-spacing: 0;
+  color: #2f7d5c;
 }
 
 .donations-breakdown {
   padding: 24px;
-  border-radius: 28px;
+  border-radius: 20px;
 }
 
 .donations-breakdown h2,
@@ -122,8 +114,8 @@
   margin: 0 0 18px;
   font-size: 18px;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #ffffff;
+  letter-spacing: 0;
+  color: #263238;
 }
 
 .section-spacing {
@@ -142,18 +134,18 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #e8dccb;
+  border-radius: 14px;
+  background: #fff8ef;
 }
 
 .breakdown-item span:first-child {
-  color: #ffffff;
+  color: #263238;
   font-weight: 700;
 }
 
 .breakdown-item span:last-child {
-  color: #38bdf8;
+  color: #2f7d5c;
   font-weight: 800;
 }
 
@@ -167,9 +159,9 @@
 
 .filter-select,
 .tab {
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(255, 255, 255, 0.05);
-  color: #f8fbff;
+  border: 1px solid #e8dccb;
+  background: #ffffff;
+  color: #263238;
 }
 
 .filter-select {
@@ -182,13 +174,13 @@
 
 .filter-select:focus {
   outline: none;
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+  border-color: #2f7d5c;
+  box-shadow: 0 0 0 3px rgba(47, 125, 92, 0.12);
 }
 
 .tabs {
   padding-bottom: 6px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  border-bottom: 1px solid #e8dccb;
 }
 
 .tab {
@@ -203,22 +195,21 @@
 
 .tab:hover {
   transform: translateY(-1px);
-  border-color: rgba(56, 189, 248, 0.3);
+  border-color: #dff3ea;
 }
 
 .tab.active {
-  border-color: rgba(56, 189, 248, 0.35);
+  border-color: #2f7d5c;
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(245, 158, 11, 0.12));
+  background: #2f7d5c;
 }
 
 .table-shell {
   overflow-x: auto;
-  border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(8, 17, 31, 0.66);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.22);
+  border-radius: 18px;
+  border: 1px solid #e8dccb;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(38, 50, 56, 0.08);
 }
 
 .admin-table {
@@ -229,13 +220,13 @@
 }
 
 .admin-table thead {
-  background: linear-gradient(180deg, rgba(14, 30, 52, 0.96), rgba(10, 22, 41, 0.96));
+  background: #f8f1e7;
 }
 
 .admin-table th {
   padding: 16px;
   text-align: left;
-  color: rgba(248, 251, 255, 0.78);
+  color: #4b5563;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -244,17 +235,17 @@
 
 .admin-table td {
   padding: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.12);
-  color: rgba(248, 251, 255, 0.9);
+  border-top: 1px solid #e8dccb;
+  color: #263238;
   font-size: 14px;
 }
 
 .admin-table tbody tr {
-  background: rgba(255, 255, 255, 0.02);
+  background: #ffffff;
 }
 
 .admin-table tbody tr:hover {
-  background: rgba(56, 189, 248, 0.06);
+  background: #fff8ef;
 }
 
 .admin-table tbody tr:last-child td {
@@ -325,7 +316,7 @@
 .btn-primary,
 .btn-secondary {
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 999px;
   cursor: pointer;
   font-weight: 800;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
@@ -335,7 +326,7 @@
   margin: 0 4px 0 0;
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.06);
-  color: #f8fbff;
+  color: #263238;
   font-size: 12px;
 }
 
@@ -365,22 +356,22 @@
 
 .btn-primary {
   padding: 10px 18px;
-  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  background: #2f7d5c;
   color: #ffffff;
 }
 
 .btn-secondary {
   padding: 10px 18px;
-  border-color: rgba(148, 163, 184, 0.18);
-  background: rgba(255, 255, 255, 0.05);
-  color: #f8fbff;
+  border-color: #e8dccb;
+  background: #ffffff;
+  color: #2f7d5c;
 }
 
 .btn-danger {
   padding: 10px 18px;
-  border-color: rgba(248, 113, 113, 0.28);
-  background: rgba(248, 113, 113, 0.12);
-  color: #fecaca;
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
 }
 
 .modal-overlay {
@@ -391,32 +382,31 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(2, 6, 23, 0.7);
-  backdrop-filter: blur(14px);
+  background: rgba(38, 50, 56, 0.28);
 }
 
 .modal {
   width: min(560px, 100%);
   padding: 28px;
-  border-radius: 28px;
+  border-radius: 20px;
 }
 
 .modal h2 {
   margin: 0 0 18px;
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  color: #ffffff;
+  letter-spacing: 0;
+  color: #263238;
 }
 
 .modal textarea,
 .modal select {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  border: 1px solid #e8dccb;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #263238;
   font-family: inherit;
   font-size: 14px;
 }
@@ -424,8 +414,8 @@
 .modal textarea:focus,
 .modal select:focus {
   outline: none;
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+  border-color: #2f7d5c;
+  box-shadow: 0 0 0 3px rgba(47, 125, 92, 0.12);
 }
 
 .modal-actions {
@@ -438,7 +428,7 @@
 
 .modal-copy {
   margin: 8px 0 14px;
-  color: rgba(226, 232, 240, 0.72);
+  color: #6b7280;
   line-height: 1.5;
 }
 
@@ -475,11 +465,11 @@
 .error-message {
   margin-bottom: 18px;
   padding: 14px 16px;
-  border: 1px solid rgba(248, 113, 113, 0.18);
+  border: 1px solid #fecaca;
   border-left-width: 4px;
-  border-radius: 18px;
-  background: rgba(248, 113, 113, 0.12);
-  color: #fecaca;
+  border-radius: 14px;
+  background: #fff1f2;
+  color: #b91c1c;
 }
 
 .donation-triage-grid {
@@ -490,28 +480,20 @@
 
 .donation-triage-card,
 .empty-state {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(8, 17, 31, 0.66);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.22);
+  border: 1px solid #e8dccb;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(38, 50, 56, 0.08);
 }
 
 .donation-triage-card {
   position: relative;
   overflow: hidden;
   padding: 22px;
-  border-radius: 26px;
+  border-radius: 20px;
 }
 
 .donation-triage-card::before {
-  content: '';
-  position: absolute;
-  inset: -40% -20% auto auto;
-  width: 220px;
-  height: 220px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.16), transparent 68%);
-  pointer-events: none;
+  display: none;
 }
 
 .donation-card-header {
@@ -525,22 +507,22 @@
 
 .donation-card-header h2 {
   margin: 0;
-  color: #ffffff;
+  color: #263238;
   font-size: 20px;
   font-weight: 850;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .donation-card-header p {
   margin: 6px 0 0;
-  color: rgba(226, 232, 240, 0.68);
+  color: #6b7280;
   font-size: 13px;
 }
 
 .donation-card-eyebrow {
   display: inline-flex;
   margin-bottom: 8px;
-  color: #fbbf24;
+  color: #2f7d5c;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -557,9 +539,9 @@
 .donation-ops-item {
   min-width: 0;
   padding: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid #e8dccb;
+  border-radius: 14px;
+  background: #fff8ef;
 }
 
 .donation-ops-icon {
@@ -569,8 +551,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: rgba(56, 189, 248, 0.12);
-  color: #38bdf8;
+  background: #dff3ea;
+  color: #2f7d5c;
   font-size: 12px;
   font-weight: 900;
 }
@@ -578,7 +560,7 @@
 .donation-ops-item span {
   display: block;
   margin-top: 8px;
-  color: rgba(226, 232, 240, 0.58);
+  color: #6b7280;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -589,7 +571,7 @@
   display: block;
   margin-top: 5px;
   overflow-wrap: anywhere;
-  color: #ffffff;
+  color: #263238;
   font-size: 14px;
   line-height: 1.45;
 }
@@ -602,8 +584,8 @@
   flex-wrap: wrap;
   margin-top: 18px;
   padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.12);
-  color: rgba(226, 232, 240, 0.68);
+  border-top: 1px solid #e8dccb;
+  color: #6b7280;
   font-size: 12px;
   font-weight: 700;
 }
@@ -618,14 +600,14 @@
   width: 22px;
   height: 22px;
   border-radius: 8px;
-  background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
+  background: #fff7ed;
+  color: #c2410c;
 }
 
 .empty-state {
   padding: 28px;
-  border-radius: 24px;
-  color: rgba(226, 232, 240, 0.72);
+  border-radius: 18px;
+  color: #6b7280;
   text-align: center;
 }
 
@@ -887,4 +869,41 @@
   .tabs {
     gap: 8px;
   }
+}
+
+/* Final contrast pass for the light protected admin UI. */
+.admin-dashboard,
+.admin-page,
+.admin-layout {
+  color: #263238;
+}
+
+.admin-dashboard :is(h1, h2, h3, h4, p, label, small, td, th),
+.admin-page :is(h1, h2, h3, h4, p, label, small, td, th) {
+  color: #263238;
+}
+
+.admin-dashboard :is(.page-description, .modal-copy, .donation-card-header p, .empty-state),
+.admin-page :is(.page-description, .modal-copy, .donation-card-header p, .empty-state),
+.admin-table th,
+.stat-label {
+  color: #6b7280;
+}
+
+.admin-dashboard :is(.btn-secondary, .btn-small, .filter-select, .tab:not(.active)),
+.admin-page :is(.btn-secondary, .btn-small, .filter-select, .tab:not(.active)) {
+  color: #263238;
+  background: #ffffff;
+}
+
+.admin-dashboard :is(.btn-primary, .tab.active),
+.admin-page :is(.btn-primary, .tab.active) {
+  color: #ffffff;
+  background: #2f7d5c;
+}
+
+.admin-dashboard :is(input, textarea, select),
+.admin-page :is(input, textarea, select) {
+  color: #263238;
+  background: #ffffff;
 }

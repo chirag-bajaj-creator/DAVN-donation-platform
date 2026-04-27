@@ -40,6 +40,34 @@
 
 ## Recent Changes
 
+- Redesigned all three public landing pages from the reference screenshot and `soothing_award_winning_ui_guide (1).md`:
+  - client landing is now closest to the donation-platform reference, with calm ivory/green UI, hero aid illustration, donor/volunteer/NGO flow card, how-it-works, donation categories, impact stats, trust/safety, tracking timeline, CTA, and footer.
+  - admin landing now uses the same soothing structure adapted to admin modules, operational timeline, trust controls, and sign-in CTA.
+  - volunteer landing now uses the same soothing structure adapted to registration, assigned tasks, proof reporting, volunteer safety, and task journey.
+  - updated `admin-app/src/pages/Home/AdminHomePage.jsx`, `client/src/pages/Home/HomePage.jsx`, `volunteer-app/src/pages/HomePage.jsx`, and each app's `src/styles/landing.css`.
+  - preserved existing login modal/auth behavior and CTA routes.
+  - elevated `npm.cmd run build` passed for `admin-app`, `volunteer-app`, and `client`.
+- Expanded and beautified the screenshot-style landing redesign:
+  - admin landing received more content depth: real admin use cases, decision-clarity band, monitoring cards, and footer columns.
+  - client landing received real use cases, proof-first band, testimonials, and footer columns.
+  - volunteer landing received volunteer use cases, field-ready workflow band, benefit cards, and footer columns.
+  - added shared calm section styling for use-case cards, testimonial cards, review/stat bands, and rich footers in all three `landing.css` files.
+  - elevated `npm.cmd run build` passed for `admin-app`, `volunteer-app`, and `client`; admin still emits existing Tailwind minifier warnings.
+- Adjusted landing-page heading spacing across all three apps:
+  - added more margin and line-height around hero headings, section headings, card headings, split-section headings, and final CTA headings.
+  - increased landing section vertical padding to reduce cramped heading/content spacing.
+  - elevated `npm.cmd run build` passed for `admin-app`, `volunteer-app`, and `client`.
+- Implemented `changes.md` point 5 for protected dashboards while leaving public landing pages unchanged:
+  - converted admin protected layout/dashboard styling from dark matte/glass to a minimal light Calm Impact UI in `admin-app/src/components/styles/adminLayout.css` and `admin-app/src/styles/admin.css`.
+  - styled the admin close/open menu button with a proper rounded minimal treatment.
+  - added protected volunteer minimal UI overrides in `volunteer-app/src/styles/volunteer.css`, including safer task-card wrapping/grid behavior to reduce overlapping on My Tasks.
+  - added protected client minimal UI overrides in `client/src/styles/client-shell.css`.
+  - did not edit any `landing.css` files.
+  - non-elevated builds still hit known Vite `spawn EPERM`; elevated `npm.cmd run build` passed for `admin-app`, `volunteer-app`, and `client`.
+- Fixed follow-up contrast issue after the minimal dashboard conversion:
+  - added final high-contrast protected-shell overrides so text/buttons remain readable on the new light backgrounds in admin, client, and volunteer apps.
+  - kept primary buttons white-on-green and secondary/text buttons dark or green-on-light.
+  - elevated `npm.cmd run build` passed again for `admin-app`, `volunteer-app`, and `client`.
 - Redesigned the three public landing pages with a bold minimalist glassmorphism system:
   - `admin-app/src/pages/Home/AdminHomePage.jsx` now uses an executive navy/cyan/amber admin command-center design.
   - `volunteer-app/src/pages/HomePage.jsx` now uses a forest/emerald/teal volunteer field-verification design.

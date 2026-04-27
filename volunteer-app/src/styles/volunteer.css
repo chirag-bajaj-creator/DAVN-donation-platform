@@ -879,3 +879,226 @@
     font-size: clamp(28px, 9vw, 38px);
   }
 }
+
+/* Minimal protected volunteer UI. Landing styles remain isolated in landing.css. */
+.volunteer-app-shell {
+  color: #263238;
+  background: #fff8ef;
+}
+
+.volunteer-nav {
+  border-bottom: 1px solid #e8dccb;
+  background: rgba(255, 248, 239, 0.96);
+  box-shadow: 0 10px 30px rgba(38, 50, 56, 0.06);
+  backdrop-filter: none;
+}
+
+.volunteer-brand,
+.volunteer-page-title,
+.volunteer-action-card h3,
+.volunteer-choice-card h3,
+.volunteer-section-title,
+.volunteer-task-card h3,
+.volunteer-form-heading,
+.volunteer-auth-title,
+.volunteer-meta-item strong,
+.volunteer-context-item strong,
+.volunteer-task-title,
+.volunteer-report-heading h2,
+.volunteer-label,
+.volunteer-fieldset legend,
+.volunteer-live-tracking strong {
+  color: #263238;
+  letter-spacing: 0;
+}
+
+.volunteer-brand-mark,
+.volunteer-submit,
+.volunteer-task-action.is-emerald,
+.volunteer-nav-button {
+  color: #ffffff;
+  background: #2f7d5c;
+  box-shadow: 0 10px 24px rgba(47, 125, 92, 0.16);
+}
+
+.volunteer-nav-link,
+.volunteer-chip,
+.volunteer-menu-panel-inner,
+.volunteer-page-hero,
+.volunteer-panel,
+.volunteer-card,
+.volunteer-form-card,
+.volunteer-modal-card,
+.volunteer-empty-card,
+.volunteer-auth-card,
+.volunteer-stat-card,
+.volunteer-action-card,
+.volunteer-choice-card,
+.volunteer-task-card,
+.volunteer-loading-card {
+  border-color: #e8dccb;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(38, 50, 56, 0.08);
+  backdrop-filter: none;
+}
+
+.volunteer-page-hero,
+.volunteer-panel,
+.volunteer-form-card,
+.volunteer-modal-card,
+.volunteer-empty-card,
+.volunteer-auth-card,
+.volunteer-task-card,
+.volunteer-action-card,
+.volunteer-stat-card {
+  border-radius: 18px;
+}
+
+.volunteer-page-kicker,
+.volunteer-back-link,
+.volunteer-auth-link {
+  color: #2f7d5c;
+}
+
+.volunteer-page-copy,
+.volunteer-section-copy,
+.volunteer-form-copy,
+.volunteer-action-card p,
+.volunteer-choice-card p,
+.volunteer-task-card p,
+.volunteer-auth-copy,
+.volunteer-helper,
+.volunteer-empty-copy,
+.volunteer-meta-item span,
+.volunteer-task-meta,
+.volunteer-task-description,
+.volunteer-auth-note,
+.volunteer-context-item span,
+.volunteer-field-brief span,
+.volunteer-report-heading p {
+  color: #6b7280;
+}
+
+.volunteer-stat-card strong {
+  color: #2f7d5c;
+}
+
+.volunteer-action-card-primary,
+.volunteer-action-card-secondary,
+.volunteer-action-card-danger,
+.volunteer-field-brief,
+.volunteer-report-section,
+.volunteer-meta-item,
+.volunteer-context-item {
+  border-color: #e8dccb;
+  background: #fff8ef;
+}
+
+.volunteer-task-list,
+.volunteer-choice-grid,
+.volunteer-form-grid {
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+}
+
+.volunteer-task-card,
+.volunteer-task-top,
+.volunteer-meta-item,
+.volunteer-context-item,
+.volunteer-field-brief,
+.volunteer-task-title,
+.volunteer-task-description {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.volunteer-field-icon,
+.volunteer-report-icon {
+  background: #dff3ea;
+  color: #2f7d5c;
+}
+
+.volunteer-task-action {
+  color: #2f7d5c;
+  background: #dff3ea;
+  box-shadow: none;
+}
+
+.volunteer-task-action.is-amber {
+  color: #7c2d12;
+  background: #fed7aa;
+}
+
+.volunteer-task-action.is-rose {
+  color: #ffffff;
+  background: #be123c;
+}
+
+.volunteer-live-tracking,
+.volunteer-input,
+.volunteer-textarea,
+.volunteer-select,
+.volunteer-file,
+.volunteer-fieldset label {
+  border-color: #e8dccb;
+  background: #ffffff;
+  color: #263238;
+}
+
+.volunteer-live-tracking.is-on,
+.volunteer-input:focus,
+.volunteer-textarea:focus,
+.volunteer-select:focus,
+.volunteer-file:focus {
+  border-color: #2f7d5c;
+  box-shadow: 0 0 0 3px rgba(47, 125, 92, 0.12);
+}
+
+.volunteer-alert {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.volunteer-alert.is-muted {
+  border-color: #dff3ea;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.volunteer-footer {
+  color: #6b7280;
+}
+
+@media (max-width: 900px) {
+  .volunteer-task-list,
+  .volunteer-choice-grid,
+  .volunteer-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Final contrast pass for the light protected volunteer UI. */
+.volunteer-app-shell {
+  color: #263238;
+}
+
+.volunteer-app-shell :is(h1, h2, h3, h4, p, span, label, legend, strong, button, a, div) {
+  color: #263238;
+}
+
+.volunteer-app-shell :is(.volunteer-page-copy, .volunteer-section-copy, .volunteer-form-copy, .volunteer-action-card p, .volunteer-choice-card p, .volunteer-task-card p, .volunteer-auth-copy, .volunteer-helper, .volunteer-empty-copy, .volunteer-meta-item span, .volunteer-task-meta, .volunteer-task-description, .volunteer-auth-note, .volunteer-context-item span, .volunteer-field-brief span, .volunteer-report-heading p, .volunteer-footer) {
+  color: #6b7280;
+}
+
+.volunteer-app-shell :is(.volunteer-nav-link, .volunteer-back-link, .volunteer-auth-link, .volunteer-task-action) {
+  color: #2f7d5c;
+}
+
+.volunteer-app-shell :is(.volunteer-brand-mark, .volunteer-nav-button, .volunteer-submit, .volunteer-task-action.is-emerald, .volunteer-task-action.is-rose) {
+  color: #ffffff;
+}
+
+.volunteer-app-shell :is(input, textarea, select) {
+  color: #263238;
+  background: #ffffff;
+}

@@ -898,3 +898,214 @@ body {
     min-height: 320px;
   }
 }
+
+/* Minimal protected client UI. Public landing.css remains unchanged. */
+:root {
+  --client-bg: #fff8ef;
+  --client-bg-deep: #f8f1e7;
+  --client-surface: #ffffff;
+  --client-surface-strong: #ffffff;
+  --client-border: #e8dccb;
+  --client-text: #263238;
+  --client-muted: #6b7280;
+  --client-primary: #2f7d5c;
+  --client-secondary: #dff3ea;
+  --client-accent: #f4a261;
+  --client-cyan: #2f7d5c;
+  --client-success: #166534;
+  --client-danger: #b91c1c;
+  --client-shadow: 0 16px 40px rgba(38, 50, 56, 0.08);
+}
+
+body {
+  color: var(--client-text);
+  background: #fff8ef;
+}
+
+.client-shell::before,
+.client-auth-shell::before {
+  display: none;
+}
+
+.client-shell,
+.client-auth-shell {
+  color: var(--client-text);
+  background: #fff8ef;
+}
+
+.client-panel,
+.client-shell .client-panel,
+.client-auth-shell .client-panel,
+.client-shell .client-card,
+.client-shell .client-empty-state,
+.client-shell :is(.bg-white, .bg-gray-50, .bg-blue-50, .bg-indigo-100, .bg-red-100, .bg-green-100, .bg-orange-100, .bg-purple-100) {
+  border-color: #e8dccb !important;
+  background: #ffffff !important;
+  color: #263238;
+  box-shadow: var(--client-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.client-panel,
+.client-shell .client-card {
+  border-radius: 18px;
+}
+
+.client-page-title,
+.client-brand,
+.client-shell :is(.text-gray-900, .text-gray-800, .text-gray-700, .text-black),
+.client-shell .client-stat-card strong,
+.tracking-case-card h2,
+.tracking-detail-grid h2 {
+  color: #263238 !important;
+  letter-spacing: 0;
+}
+
+.client-page-copy,
+.client-muted,
+.client-shell :is(.text-gray-600, .text-gray-500, .text-gray-400),
+.tracking-case-card p,
+.tracking-detail-grid p {
+  color: #6b7280 !important;
+}
+
+.client-kicker,
+.client-shell .client-tab.is-active,
+.client-shell .client-button-secondary,
+.client-shell .client-button-ghost {
+  color: #2f7d5c;
+}
+
+.client-brand-mark,
+.client-shell .client-button,
+.client-auth-shell .client-button {
+  color: #ffffff;
+  background: #2f7d5c;
+  box-shadow: 0 12px 24px rgba(47, 125, 92, 0.18);
+}
+
+.client-shell .client-button-secondary,
+.client-auth-shell .client-button-secondary,
+.client-shell .client-button-ghost,
+.client-auth-shell .client-button-ghost,
+.client-shell .client-tab,
+.client-shell .client-tab.is-active {
+  border-color: #e8dccb;
+  background: #ffffff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.client-shell .client-tab.is-active {
+  border-bottom-color: #2f7d5c;
+  background: #dff3ea;
+}
+
+.client-shell :is(.border-gray-200, .border-gray-300, .border-b) {
+  border-color: #e8dccb !important;
+}
+
+.client-shell .client-topbar.is-scrolled,
+.client-auth-shell .client-topbar.is-scrolled {
+  border-color: #e8dccb;
+  background: rgba(255, 248, 239, 0.96);
+  box-shadow: 0 10px 30px rgba(38, 50, 56, 0.06);
+  backdrop-filter: none;
+}
+
+.client-shell .client-form :is(label, legend),
+.client-auth-shell .client-form :is(label, legend) {
+  color: #263238;
+}
+
+.client-shell .client-form :is(input, textarea, select),
+.client-auth-shell .client-form :is(input, textarea, select) {
+  border-color: #e8dccb;
+  background: #ffffff;
+  color: #263238;
+  box-shadow: none;
+}
+
+.client-shell .client-form :is(input, textarea, select):focus,
+.client-auth-shell .client-form :is(input, textarea, select):focus {
+  border-color: #2f7d5c;
+  box-shadow: 0 0 0 3px rgba(47, 125, 92, 0.12);
+}
+
+.client-shell .client-info-banner {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.tracking-status-card,
+.tracking-live-pill,
+.tracking-map,
+.tracking-map-footer {
+  border-color: #e8dccb;
+  background: #ffffff;
+  color: #263238;
+}
+
+.tracking-map {
+  background: #f8f1e7;
+}
+
+.tracking-map-grid {
+  background-image:
+    linear-gradient(#e8dccb 1px, transparent 1px),
+    linear-gradient(90deg, #e8dccb 1px, transparent 1px);
+}
+
+.tracking-status-card span,
+.tracking-case-actions span {
+  color: #6b7280;
+}
+
+.tracking-status-card strong,
+.tracking-map-footer a {
+  color: #2f7d5c;
+}
+
+/* Final contrast pass for the light protected client UI. */
+.client-shell,
+.client-auth-shell {
+  color: #263238;
+}
+
+.client-shell :is(h1, h2, h3, h4, p, span, label, legend, td, th, li, div),
+.client-auth-shell :is(h1, h2, h3, h4, p, span, label, legend, td, th, li, div) {
+  color: #263238;
+}
+
+.client-shell :is(.text-white, .text-gray-900, .text-gray-800, .text-gray-700, .text-black),
+.client-auth-shell :is(.text-white, .text-gray-900, .text-gray-800, .text-gray-700, .text-black) {
+  color: #263238 !important;
+}
+
+.client-shell :is(.text-gray-600, .text-gray-500, .text-gray-400, .client-muted, .client-page-copy),
+.client-auth-shell :is(.text-gray-600, .text-gray-500, .text-gray-400, .client-muted, .client-page-copy) {
+  color: #6b7280 !important;
+}
+
+.client-shell :is(button, a, .client-button-secondary, .client-button-ghost, .client-tab) {
+  color: #2f7d5c;
+}
+
+.client-shell :is(.client-button, .bg-primary-600, .bg-primary-700, .bg-green-600, .bg-blue-600),
+.client-auth-shell :is(.client-button, .bg-primary-600, .bg-primary-700, .bg-green-600, .bg-blue-600) {
+  color: #ffffff !important;
+  background: #2f7d5c !important;
+}
+
+.client-shell :is(.client-button, .bg-primary-600, .bg-primary-700, .bg-green-600, .bg-blue-600) *,
+.client-auth-shell :is(.client-button, .bg-primary-600, .bg-primary-700, .bg-green-600, .bg-blue-600) * {
+  color: #ffffff !important;
+}
+
+.client-shell :is(input, textarea, select),
+.client-auth-shell :is(input, textarea, select) {
+  color: #263238;
+  background: #ffffff;
+}
